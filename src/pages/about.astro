@@ -1,8 +1,21 @@
 ---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Emph from '@/components/Emph.astro';
 import Icon from '@/components/Icon.astro';
 import { ABOUT, SITE, SOCIALS } from '@/config';
+
+// Drop a photo at src/assets/about/photo.(jpg|png|webp) and it shows up here.
+const photo = Object.values(
+  import.meta.glob<{ default: ImageMetadata }>('/src/assets/about/photo.{jpg,jpeg,png,webp,avif}', { eager: true }),
+)[0]?.default;
+
+const details = [
+  { label: 'Languages', value: ABOUT.languages.map((l) => `${l.language} ${l.level}`).join(' · ') },
+  { label: 'Work permit', value: ABOUT.workPermit },
+  { label: 'Availability', value: ABOUT.startDate },
+].filter((d) => d.value);
 ---
 
 <BaseLayout title="About" description={`About ${SITE.name}: education, skills and how to get in touch.`}>
@@ -27,8 +40,32 @@ import { ABOUT, SITE, SOCIALS } from '@/config';
       </div>
 
       <aside class="space-y-3 self-start text-sm" data-reveal style="--i: 3">
+        {
+          photo && (
+            <Image
+              src={photo}
+              alt={`Portrait of ${SITE.name}`}
+              widths={[320, 640]}
+              sizes="20rem"
+              class="aspect-[4/5] w-full rounded-2xl border border-border object-cover"
+              loading="eager"
+            />
+          )
+        }
         <div class="rounded-2xl border border-border bg-surface p-5">
           <p class="flex items-center gap-2 text-fg-muted"><Icon name="map-pin" size={16} /> {SITE.location}</p>
+          {
+            details.length > 0 && (
+              <dl class="mt-4 space-y-3 border-t border-border pt-4">
+                {details.map(({ label, value }) => (
+                  <div>
+                    <dt class="font-mono text-xs text-fg-subtle">{label}</dt>
+                    <dd class="mt-0.5 text-fg">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            )
+          }
           <ul class="mt-4 space-y-2.5 border-t border-border pt-4">
             {
               SOCIALS.map(({ label, href, icon }) => (
@@ -60,7 +97,7 @@ import { ABOUT, SITE, SOCIALS } from '@/config';
                 <h3 class="font-semibold">{item.degree}</h3>
                 <p class="mt-1 text-fg-muted">{item.school}</p>
                 <p class="mt-2 font-mono text-xs text-fg-subtle">
-                  {item.period} · {item.location}
+                  {[item.period, item.location].filter(Boolean).join(' · ')}
                 </p>
               </div>
             </div>

@@ -1,3 +1,5 @@
+import { traceContour } from './marching-squares';
+
 /**
  * Hero background: contour lines of a drifting "loss surface" (Gaussians on a slope, marching
  * squares) with a few momentum-SGD particles rolling downhill. The pointer acts as an extra minimum.
@@ -30,12 +32,6 @@ const BLOBS: Blob[] = [
   { x: 0.55, y: 0.85, ax: 0.07, ay: 0.05, fx: 0.09, fy: 0.05, phase: 3.1, amp: -0.7, sigma: 0.12 },
   { x: 0.95, y: 0.2, ax: 0.04, ay: 0.06, fx: 0.06, fy: 0.1, phase: 4.4, amp: 0.8, sigma: 0.13 },
   { x: 0.4, y: 0.2, ax: 0.06, ay: 0.06, fx: 0.05, fy: 0.08, phase: 2.2, amp: 0.55, sigma: 0.15 },
-];
-
-// Marching-squares segments per case. Edges: 0 top, 1 right, 2 bottom, 3 left.
-const CASES: number[][] = [
-  [], [3, 2], [2, 1], [3, 1], [0, 1], [3, 0, 2, 1], [0, 2], [3, 0],
-  [3, 0], [0, 2], [0, 1, 3, 2], [0, 1], [3, 1], [2, 1], [3, 2], [],
 ];
 
 const LEVEL_STEP = 0.11;
@@ -183,41 +179,10 @@ export function createContourField(canvas: HTMLCanvasElement): () => void {
       ctx!.lineWidth = index ? 1.25 : 1;
       ctx!.globalAlpha = (0.14 + 0.34 * Math.abs(depth - 0.5)) * (index ? 1.8 : 1);
       ctx!.beginPath();
-      for (let j = 0; j < rows - 1; j++) {
-        const y0 = j * cell;
-        for (let i = 0; i < cols - 1; i++) {
-          const tl = values[j * cols + i]!;
-          const tr = values[j * cols + i + 1]!;
-          const br = values[(j + 1) * cols + i + 1]!;
-          const bl = values[(j + 1) * cols + i]!;
-          const idx = (tl > level ? 8 : 0) | (tr > level ? 4 : 0) | (br > level ? 2 : 0) | (bl > level ? 1 : 0);
-          const segs = CASES[idx]!;
-          if (!segs.length) continue;
-          const x0 = i * cell;
-          for (let s = 0; s < segs.length; s += 2) {
-            for (let e = 0; e < 2; e++) {
-              const edge = segs[s + e]!;
-              let px: number;
-              let py: number;
-              if (edge === 0) {
-                px = x0 + cell * ((level - tl) / (tr - tl));
-                py = y0;
-              } else if (edge === 1) {
-                px = x0 + cell;
-                py = y0 + cell * ((level - tr) / (br - tr));
-              } else if (edge === 2) {
-                px = x0 + cell * ((level - bl) / (br - bl));
-                py = y0 + cell;
-              } else {
-                px = x0;
-                py = y0 + cell * ((level - tl) / (bl - tl));
-              }
-              if (e === 0) ctx!.moveTo(px, py);
-              else ctx!.lineTo(px, py);
-            }
-          }
-        }
-      }
+      traceContour(values, cols, rows, cell, level, (x1, y1, x2, y2) => {
+        ctx!.moveTo(x1, y1);
+        ctx!.lineTo(x2, y2);
+      });
       ctx!.stroke();
     }
     ctx!.globalAlpha = 1;

@@ -1,0 +1,76 @@
+---
+import { ART_HEIGHT, ART_WIDTH, contourArt } from '@/lib/contour-art';
+
+interface Props {
+  seed: string;
+  class?: string;
+}
+
+const { seed, class: className } = Astro.props;
+const art = contourArt(seed);
+---
+
+<svg
+  class:list={['contour-art', className]}
+  viewBox={`0 0 ${ART_WIDTH} ${ART_HEIGHT}`}
+  preserveAspectRatio="xMidYMid slice"
+  aria-hidden="true"
+  focusable="false"
+>
+  <g class="lines" fill="none" stroke-linecap="round">
+    {
+      art.lines.map((line) => (
+        <path
+          d={line.d}
+          class={line.depth < 0.5 ? 'low' : 'high'}
+          stroke-opacity={((0.16 + 0.4 * Math.abs(line.depth - 0.5)) * (line.index ? 1.7 : 1)).toFixed(2)}
+          stroke-width={line.index ? 1.25 : 1}
+          vector-effect="non-scaling-stroke"
+        />
+      ))
+    }
+  </g>
+  {
+    art.descent && (
+      <>
+        <path class="descent" d={art.descent} fill="none" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+        <circle class="minimum" cx={art.end[0]} cy={art.end[1]} r="3.5" />
+        <circle class="minimum-ring" cx={art.end[0]} cy={art.end[1]} r="9" fill="none" vector-effect="non-scaling-stroke" />
+      </>
+    )
+  }
+</svg>
+
+<style>
+  .contour-art {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .lines {
+    transform-origin: 50% 50%;
+    transition: transform 900ms var(--ease-out);
+  }
+  .low {
+    stroke: var(--accent);
+  }
+  .high {
+    stroke: var(--accent-2);
+  }
+  .descent {
+    stroke: var(--fg);
+    stroke-opacity: 0.55;
+    stroke-width: 1.5;
+    stroke-dasharray: 0 7;
+  }
+  .minimum {
+    fill: var(--fg);
+  }
+  .minimum-ring {
+    stroke: var(--accent);
+    stroke-opacity: 0.6;
+  }
+  :global(.card:hover) .lines {
+    transform: scale(1.04);
+  }
+</style>

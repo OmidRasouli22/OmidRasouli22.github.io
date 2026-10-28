@@ -16,6 +16,11 @@ export const SITE = {
   eyebrow: 'M.Sc. AI · University of Freiburg',
   /** Availability badge in the hero. Set to '' to hide it. */
   availability: 'Open to roles in Germany',
+  /** "Now" line at the bottom of the hero. Set text to '' to hide it. */
+  now: {
+    text: 'Building German Job Market Radar on Databricks',
+    href: '/projects/german-job-market-radar/',
+  },
   /** Default meta description for pages that don't set their own. */
   description:
     'Personal site and blog of Omid Rasouli, M.Sc. AI student at the University of Freiburg and software engineer. Writing about machine learning, AutoML and data engineering.',
@@ -89,12 +94,21 @@ export const ABOUT = {
     "I'm Omid. I'm doing my M.Sc. in Artificial Intelligence at the University of Freiburg, and I've worked as a software engineer for more than four years, including freelance projects, mostly with Python, TypeScript, Node.js and Next.js.",
     "These days most of my time goes into machine learning and data engineering: AutoML and tabular foundation models like TabPFN on the research side, and data pipelines that run reliably on the engineering side. I'm looking for AI Engineer, Data Engineer, Data Scientist and Backend roles in Germany.",
   ],
+  /**
+   * Practical details for recruiters in Germany. Anything left empty is hidden.
+   * languages: e.g. [{ language: 'English', level: 'C1' }, { language: 'German', level: 'B1' }]
+   * workPermit: e.g. 'Allowed to work in Germany, no sponsorship needed'
+   * startDate: e.g. 'Working student now, full-time from autumn 2027'
+   */
+  languages: [] as { language: string; level: string }[],
+  workPermit: '',
+  startDate: '',
   education: [
     {
       degree: 'M.Sc. Artificial Intelligence',
       school: 'University of Freiburg',
       location: 'Freiburg, Germany',
-      period: 'TODO: start year – present',
+      period: '', // TODO: e.g. '2024 – present'
     },
     {
       degree: 'B.Sc. Computer Engineering',
@@ -103,22 +117,23 @@ export const ABOUT = {
       period: '2018 – 2023',
     },
   ],
+  // TODO: review the skill lists
   skills: [
     {
       area: 'AI / ML',
-      items: ['Python', 'PyTorch', 'scikit-learn', 'AutoML', 'TabPFN', 'RAG', 'TODO: review list'],
+      items: ['Python', 'PyTorch', 'scikit-learn', 'AutoML', 'TabPFN', 'RAG'],
     },
     {
       area: 'Data Engineering',
-      items: ['SQL', 'Databricks', 'Spark', 'ETL / ELT pipelines', 'TODO: review list'],
+      items: ['SQL', 'Databricks', 'Spark', 'ETL / ELT pipelines'],
     },
     {
       area: 'Backend',
-      items: ['Python', 'Node.js', 'TypeScript', 'REST APIs', 'TODO: review list'],
+      items: ['Python', 'Node.js', 'TypeScript', 'REST APIs'],
     },
     {
       area: 'Frontend',
-      items: ['TypeScript', 'React', 'Next.js', 'Tailwind CSS', 'TODO: review list'],
+      items: ['TypeScript', 'React', 'Next.js', 'Tailwind CSS'],
     },
   ],
 } as const;

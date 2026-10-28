@@ -82,6 +82,28 @@ period: 2025 – 2026        # optional
 Write the case study here. Everything that works in blog posts works here too.
 ```
 
+## About page and hero extras
+
+- **Photo:** put an image at `src/assets/about/photo.jpg` (or `.png` / `.webp`). It shows up on the About page
+  automatically, resized and optimised. Remove the file to hide it.
+- **Languages, work permit, availability:** fill in `languages`, `workPermit` and `startDate` in `ABOUT` in
+  `src/config.ts`. Each one only appears once it has a value.
+- **"Now" line:** `SITE.now` in `src/config.ts`, shown at the bottom of the hero. Set `text: ''` to hide it.
+
+## Project visuals
+
+Every project card and project page has a picture at the top. If the project has a `cover` image in its
+frontmatter, that is used. Otherwise a contour landscape is generated from the project's slug at build time
+(`src/lib/contour-art.ts`), with a small gradient-descent path ending in its lowest basin. The same slug always
+gives the same picture, and renaming the file gives a new one.
+
+For real projects a screenshot, architecture diagram or result chart usually works better than the generated art:
+
+```yaml
+cover: ../../assets/projects/my-project/cover.png
+coverAlt: Architecture of the ingestion pipeline
+```
+
 ## Changing your info, colours and fonts
 
 Everything personal lives in **`src/config.ts`**:

@@ -4,6 +4,7 @@ import { render } from 'astro:content';
 import { Image } from 'astro:assets';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Callout from '@/components/Callout.astro';
+import ContourArt from '@/components/ContourArt.astro';
 import Icon from '@/components/Icon.astro';
 import StatusBadge from '@/components/StatusBadge.astro';
 import { getProjects } from '@/lib/posts';
@@ -64,16 +65,25 @@ const { Content } = await render(project);
       }
     </header>
 
-    {
-      cover && (
-        <div class="mt-10 overflow-hidden rounded-2xl border border-border">
-          <Image src={cover} alt={coverAlt ?? ''} widths={[640, 960, 1280, 1600]} sizes="(min-width: 72rem) 70rem, 100vw" class="w-full" loading="eager" />
-        </div>
-      )
-    }
+    <div class="visual mt-10 overflow-hidden rounded-2xl border border-border" transition:name={`project-visual-${project.id}`}>
+      {
+        cover ? (
+          <Image src={cover} alt={coverAlt ?? ''} widths={[640, 960, 1280, 1600]} sizes="(min-width: 72rem) 70rem, 100vw" class="size-full object-cover" loading="eager" />
+        ) : (
+          <ContourArt seed={project.id} />
+        )
+      }
+    </div>
 
     <div class="article prose mt-12 max-w-3xl">
       <Content components={{ Callout }} />
     </div>
   </article>
 </BaseLayout>
+
+<style>
+  .visual {
+    aspect-ratio: 16 / 6;
+    background: var(--bg-subtle);
+  }
+</style>

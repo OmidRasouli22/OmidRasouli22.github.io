@@ -79,9 +79,20 @@ const personLd = {
         </div>
       </div>
     </div>
-    <div class="pointer-events-none absolute inset-x-0 bottom-6" aria-hidden="true">
-      <div class="container-page flex justify-end">
-        <p class="fig-caption">fig. 1 · gradient descent on a live loss surface<span class="hint"> · move your cursor</span></p>
+    <div class="pointer-events-none absolute inset-x-0 bottom-6">
+      <div class="container-page flex items-end justify-between gap-6">
+        {
+          SITE.now.text ? (
+            <a href={SITE.now.href} class="now hero-in pointer-events-auto group" style="--d: 7">
+              <span class="now-label">Now</span>
+              <span class="link-underline text-fg-muted group-hover:text-fg">{SITE.now.text}</span>
+              <Icon name="arrow-right" size={13} class="transition-transform duration-300 group-hover:translate-x-0.5" />
+            </a>
+          ) : (
+            <span />
+          )
+        }
+        <p class="fig-caption" aria-hidden="true">fig. 1 · gradient descent on a live loss surface<span class="hint"> · move your cursor</span></p>
       </div>
     </div>
   </section>
@@ -116,6 +127,22 @@ const personLd = {
   }
   .word {
     display: inline-block;
+  }
+  .now {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+  .now-label {
+    padding: 0.1rem 0.45rem;
+    border: 1px solid oklch(from var(--accent) l c h / 0.4);
+    border-radius: 999px;
+    color: var(--accent);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
   .fig-caption {
     display: none;
