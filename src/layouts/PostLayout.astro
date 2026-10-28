@@ -1,0 +1,290 @@
+---
+import { Image } from 'astro:assets';
+import type { MarkdownHeading } from 'astro';
+import katexCss from 'katex/dist/katex.min.css?url';
+import BaseLayout from './BaseLayout.astro';
+import Icon from '@/components/Icon.astro';
+import PostCard from '@/components/PostCard.astro';
+import TableOfContents from '@/components/TableOfContents.astro';
+import { SITE } from '@/config';
+import { formatDate, postUrl, readingTime, tagUrl, type Post } from '@/lib/posts';
+
+interface Props {
+  post: Post;
+  headings: MarkdownHeading[];
+  hasMath: boolean;
+  prev?: Post | undefined;
+  next?: Post | undefined;
+  related: Post[];
+}
+
+const { post, headings, hasMath, prev, next, related } = Astro.props;
+const { title, description, pubDate, updatedDate, tags, cover, coverAlt, draft } = post.data;
+const minutes = readingTime(post.body);
+const ogImage = `/og/blog/${post.id}.png`;
+
+const articleLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description,
+  datePublished: pubDate.toISOString(),
+  dateModified: (updatedDate ?? pubDate).toISOString(),
+  author: { '@type': 'Person', name: SITE.name, url: SITE.url },
+  image: new URL(ogImage, SITE.url).href,
+  url: new URL(postUrl(post), SITE.url).href,
+  mainEntityOfPage: new URL(postUrl(post), SITE.url).href,
+  keywords: tags.join(', '),
+};
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  image={ogImage}
+  imageAlt={title}
+  type="article"
+  publishedTime={pubDate}
+  modifiedTime={updatedDate}
+  tags={tags}
+  jsonLd={articleLd}
+>
+  <Fragment slot="head">{hasMath && <link rel="stylesheet" href={katexCss} />}</Fragment>
+
+  <div class="progress" aria-hidden="true"><div class="progress-bar" data-progress></div></div>
+
+  <article class="container-page pt-12 sm:pt-16" data-pagefind-body data-pagefind-meta={`date:${formatDate(pubDate)}`}>
+    <header class="max-w-3xl">
+      <a href="/blog/" class="group mb-8 inline-flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg" data-pagefind-ignore>
+        <Icon name="arrow-left" size={16} class="transition-transform duration-300 group-hover:-translate-x-0.5" />
+        All posts
+      </a>
+      <p class="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-sm text-fg-subtle" data-pagefind-ignore>
+        <time datetime={pubDate.toISOString()}>{formatDate(pubDate, 'long')}</time>
+        {
+          updatedDate && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>
+                Updated <time datetime={updatedDate.toISOString()}>{formatDate(updatedDate)}</time>
+              </span>
+            </>
+          )
+        }
+        <span aria-hidden="true">·</span>
+        <span class="inline-flex items-center gap-1"><Icon name="clock" size={14} /> {minutes} min read</span>
+        {draft && <span class="rounded-full bg-accent-soft px-2 py-0.5 text-xs text-accent">Draft</span>}
+      </p>
+      <h1
+        class="mt-4 w-fit text-4xl leading-[1.1] font-semibold tracking-tighter sm:text-5xl"
+        transition:name={`post-title-${post.id}`}
+      >
+        {title}
+      </h1>
+      <p class="mt-5 text-lg leading-relaxed text-fg-muted sm:text-xl">{description}</p>
+      {
+        tags.length > 0 && (
+          <ul class="mt-6 flex flex-wrap gap-1.5" aria-label="Tags" data-pagefind-ignore>
+            {tags.map((tag) => (
+              <li>
+                <a href={tagUrl(tag)} class="tag">
+                  #{tag}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </header>
+
+    {
+      cover && (
+        <div class="mt-10 overflow-hidden rounded-2xl border border-border" transition:name={`post-cover-${post.id}`}>
+          <Image src={cover} alt={coverAlt ?? ''} widths={[640, 960, 1280, 1600]} sizes="(min-width: 72rem) 70rem, 100vw" class="aspect-[16/9] w-full object-cover" loading="eager" fetchpriority="high" />
+        </div>
+      )
+    }
+
+    <div class="mt-10 grid gap-10 lg:mt-12 lg:grid-cols-[minmax(0,1fr)_13rem] lg:gap-16">
+      <aside class="lg:order-2" data-pagefind-ignore>
+        <div class="lg:sticky lg:top-[calc(var(--header-h)+2.5rem)]">
+          <TableOfContents headings={headings} />
+        </div>
+      </aside>
+      <div class="article prose min-w-0 lg:order-1">
+        <slot />
+      </div>
+    </div>
+  </article>
+
+  <div class="container-page" data-pagefind-ignore>
+    {
+      (prev || next) && (
+        <nav class="mt-20 grid gap-4 border-t border-border pt-10 sm:grid-cols-2" aria-label="More posts">
+          {prev ? (
+            <a href={postUrl(prev)} class="adjacent group" rel="prev">
+              <span class="flex items-center gap-1.5 text-xs text-fg-subtle">
+                <Icon name="arrow-left" size={14} /> Older post
+              </span>
+              <span class="mt-1.5 block font-medium">{prev.data.title}</span>
+            </a>
+          ) : (
+            <span />
+          )}
+          {next && (
+            <a href={postUrl(next)} class="adjacent group sm:text-right" rel="next">
+              <span class="flex items-center gap-1.5 text-xs text-fg-subtle sm:justify-end">
+                Newer post <Icon name="arrow-right" size={14} />
+              </span>
+              <span class="mt-1.5 block font-medium">{next.data.title}</span>
+            </a>
+          )}
+        </nav>
+      )
+    }
+
+    {
+      related.length > 0 && (
+        <section class="mt-20" aria-labelledby="related-heading">
+          <h2 id="related-heading" class="mb-6 text-xl font-semibold">Related posts</h2>
+          <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {related.map((p, i) => (
+              <PostCard post={p} index={i} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .progress {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 60;
+    height: 2px;
+    pointer-events: none;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+  }
+  .adjacent {
+    display: block;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition:
+      border-color 250ms var(--ease-out),
+      background-color 250ms var(--ease-out);
+  }
+  .adjacent:hover {
+    border-color: oklch(from var(--accent) l c h / 0.5);
+    background: var(--accent-soft);
+  }
+</style>
+
+<script>
+  let cleanup: (() => void) | undefined;
+
+  function initPost() {
+    cleanup?.();
+    cleanup = undefined;
+    const article = document.querySelector('.article');
+    if (!article) return;
+
+    // Reading progress (transform only).
+    const bar = document.querySelector<HTMLElement>('[data-progress]');
+    let ticking = false;
+    const updateProgress = () => {
+      ticking = false;
+      const rect = article.getBoundingClientRect();
+      const total = rect.height - innerHeight * 0.6;
+      const progress = Math.min(1, Math.max(0, -rect.top / Math.max(total, 1)));
+      if (bar) bar.style.transform = `scaleX(${progress})`;
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(updateProgress);
+      }
+    };
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onScroll, { passive: true });
+    updateProgress();
+
+    // Copy buttons + language labels on code blocks.
+    article.querySelectorAll<HTMLPreElement>('pre.astro-code').forEach((pre) => {
+      if (pre.parentElement?.classList.contains('code-block')) return;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-block';
+      const lang = pre.dataset.language;
+      if (lang && lang !== 'plaintext') wrapper.dataset.language = lang;
+      pre.replaceWith(wrapper);
+      wrapper.append(pre);
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'copy-button';
+      button.setAttribute('aria-label', 'Copy code');
+      button.innerHTML =
+        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span>Copy</span>';
+      button.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(pre.querySelector('code')?.innerText ?? pre.innerText);
+          button.dataset.copied = 'true';
+          button.querySelector('span')!.textContent = 'Copied';
+          setTimeout(() => {
+            delete button.dataset.copied;
+            button.querySelector('span')!.textContent = 'Copy';
+          }, 1800);
+        } catch {
+          button.querySelector('span')!.textContent = 'Failed';
+        }
+      });
+      wrapper.append(button);
+    });
+
+    // TOC scroll-spy.
+    const links = new Map(
+      [...document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]')].map((a) => [a.dataset.tocLink!, a]),
+    );
+    let observer: IntersectionObserver | undefined;
+    if (links.size) {
+      const visible = new Set<string>();
+      const headings = [...links.keys()]
+        .map((id) => document.getElementById(id))
+        .filter((el): el is HTMLElement => !!el);
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) visible.add(entry.target.id);
+            else visible.delete(entry.target.id);
+          }
+          // Highlight the first visible heading, or the last one scrolled past.
+          const current =
+            headings.find((h) => visible.has(h.id)) ??
+            [...headings].reverse().find((h) => h.getBoundingClientRect().top < 0);
+          links.forEach((link, id) => link.setAttribute('aria-current', String(id === current?.id)));
+        },
+        { rootMargin: '-80px 0px -55% 0px' },
+      );
+      headings.forEach((h) => observer!.observe(h));
+    }
+
+    cleanup = () => {
+      removeEventListener('scroll', onScroll);
+      removeEventListener('resize', onScroll);
+      observer?.disconnect();
+    };
+  }
+
+  document.addEventListener('astro:page-load', initPost);
+  document.addEventListener('astro:before-swap', () => {
+    cleanup?.();
+    cleanup = undefined;
+  });
+</script>

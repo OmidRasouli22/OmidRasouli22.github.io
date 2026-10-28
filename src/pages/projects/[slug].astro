@@ -1,0 +1,79 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Callout from '@/components/Callout.astro';
+import Icon from '@/components/Icon.astro';
+import StatusBadge from '@/components/StatusBadge.astro';
+import { getProjects } from '@/lib/posts';
+
+export const getStaticPaths = (async () => {
+  const projects = await getProjects();
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}) satisfies GetStaticPaths;
+
+const { project } = Astro.props;
+const { title, description, status, stack, repo, demo, context, period, cover, coverAlt } = project.data;
+const { Content } = await render(project);
+---
+
+<BaseLayout title={title} description={description} image={`/og/projects/${project.id}.png`} imageAlt={title}>
+  <article class="container-page pt-12 sm:pt-16">
+    <header class="max-w-3xl">
+      <a href="/projects/" class="group mb-8 inline-flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg">
+        <Icon name="arrow-left" size={16} class="transition-transform duration-300 group-hover:-translate-x-0.5" />
+        All projects
+      </a>
+      <div class="flex flex-wrap items-center gap-3">
+        <StatusBadge status={status} />
+        {context && <span class="font-mono text-sm text-fg-subtle">{context}</span>}
+        {period && <span class="font-mono text-sm text-fg-subtle">· {period}</span>}
+      </div>
+      <h1
+        class="mt-4 w-fit text-4xl leading-[1.1] font-semibold tracking-tighter sm:text-5xl"
+        transition:name={`project-title-${project.id}`}
+      >
+        {title}
+      </h1>
+      <p class="mt-5 text-lg leading-relaxed text-fg-muted sm:text-xl">{description}</p>
+      {
+        stack.length > 0 && (
+          <ul class="mt-6 flex flex-wrap gap-1.5" aria-label="Tech stack">
+            {stack.map((tech) => (
+              <li class="tag">{tech}</li>
+            ))}
+          </ul>
+        )
+      }
+      {
+        (repo || demo) && (
+          <div class="mt-8 flex flex-wrap gap-3">
+            {repo && (
+              <a href={repo} class="btn btn-primary" target="_blank" rel="noopener">
+                <Icon name="github" size={16} /> View code
+              </a>
+            )}
+            {demo && (
+              <a href={demo} class="btn btn-ghost" target="_blank" rel="noopener">
+                <Icon name="arrow-up-right" size={16} /> Live demo
+              </a>
+            )}
+          </div>
+        )
+      }
+    </header>
+
+    {
+      cover && (
+        <div class="mt-10 overflow-hidden rounded-2xl border border-border">
+          <Image src={cover} alt={coverAlt ?? ''} widths={[640, 960, 1280, 1600]} sizes="(min-width: 72rem) 70rem, 100vw" class="w-full" loading="eager" />
+        </div>
+      )
+    }
+
+    <div class="article prose mt-12 max-w-3xl">
+      <Content components={{ Callout }} />
+    </div>
+  </article>
+</BaseLayout>

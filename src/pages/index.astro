@@ -1,0 +1,154 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import HeroBackground from '@/components/HeroBackground.astro';
+import Icon from '@/components/Icon.astro';
+import PostCard from '@/components/PostCard.astro';
+import ProjectCard from '@/components/ProjectCard.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import { SITE, SOCIALS } from '@/config';
+import { getPosts, getProjects } from '@/lib/posts';
+
+const posts = (await getPosts()).slice(0, 3);
+const projects = (await getProjects()).filter((p) => p.data.featured).slice(0, 4);
+
+// "*word*" segments in the headline get the accent gradient; every word is revealed in turn.
+const tokens = SITE.headline
+  .split('*')
+  .flatMap((segment, i) => segment.split(/(\s+)/).map((text) => ({ text, highlight: i % 2 === 1 })))
+  .filter((token) => token.text);
+let wordIndex = 0;
+
+const personLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: SITE.name,
+  url: SITE.url,
+  email: `mailto:${SITE.email}`,
+  jobTitle: 'AI Engineer',
+  alumniOf: 'Shiraz University of Technology',
+  affiliation: { '@type': 'CollegeOrUniversity', name: 'University of Freiburg' },
+  sameAs: SOCIALS.filter((s) => s.href.startsWith('http')).map((s) => s.href),
+};
+---
+
+<BaseLayout jsonLd={personLd}>
+  <section class="relative isolate">
+    <HeroBackground />
+    <div class="container-page pt-20 pb-20 sm:pt-32 sm:pb-28">
+      {
+        SITE.availability && (
+          <p class="hero-in inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-xs font-medium text-fg-muted backdrop-blur" style="--d: 0">
+            <span class="relative flex size-2">
+              <span class="ping absolute inline-flex size-full rounded-full bg-[var(--tip)]" />
+              <span class="relative inline-flex size-2 rounded-full bg-[var(--tip)]" />
+            </span>
+            {SITE.availability}
+          </p>
+        )
+      }
+      <p class="hero-in mt-6 font-mono text-sm text-fg-muted" style="--d: 1">
+        Hi, I'm <span class="text-fg">{SITE.name}</span> — {SITE.eyebrow}
+      </p>
+      <h1 class="mt-4 max-w-4xl text-[2.6rem] leading-[1.04] font-semibold tracking-tighter sm:text-6xl lg:text-7xl">
+        {
+          tokens.map(({ text, highlight }) =>
+            /^\s+$/.test(text) ? (
+              ' '
+            ) : (
+              <span class="word-mask">
+                <span class:list={['word', { 'text-gradient': highlight }]} style={`--w: ${wordIndex++}`}>
+                  {text}
+                </span>
+              </span>
+            ),
+          )
+        }
+      </h1>
+      <p class="hero-in mt-7 max-w-2xl text-lg leading-relaxed text-fg-muted sm:text-xl" style="--d: 4">
+        {SITE.intro}
+      </p>
+      <div class="hero-in mt-10 flex flex-wrap gap-3" style="--d: 5">
+        <a href="/blog/" class="btn btn-primary">
+          Read the blog <Icon name="arrow-right" size={16} data-slide />
+        </a>
+        <a href="/projects/" class="btn btn-ghost">View projects</a>
+        <a href={SITE.cv} class="btn btn-ghost" download>
+          <Icon name="download" size={16} /> Download CV
+        </a>
+      </div>
+    </div>
+  </section>
+
+  {
+    projects.length > 0 && (
+      <section class="container-page py-16" aria-labelledby="featured-projects">
+        <SectionHeader eyebrow="Selected work" title="Featured projects" href="/projects/" linkLabel="All projects" />
+        <div class="grid gap-4 md:grid-cols-2">
+          {projects.map((project, i) => (
+            <ProjectCard project={project} index={i} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="container-page py-16" aria-labelledby="latest-posts">
+    <SectionHeader eyebrow="Writing" title="Latest posts" href="/blog/" linkLabel="All posts" />
+    {
+      posts.length > 0 ? (
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post, i) => (
+            <PostCard post={post} index={i} />
+          ))}
+        </div>
+      ) : (
+        <p class="text-fg-muted">No posts yet — check back soon.</p>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .word-mask {
+    display: inline-block;
+    overflow: clip;
+    overflow-clip-margin: 0.1em;
+    padding-bottom: 0.08em;
+    margin-bottom: -0.08em;
+    vertical-align: top;
+  }
+  .word {
+    display: inline-block;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .word {
+      animation: word-up 700ms var(--ease-out) both;
+      animation-delay: calc(150ms + var(--w) * 55ms);
+    }
+    .hero-in {
+      animation: fade-up 600ms var(--ease-out) both;
+      animation-delay: calc(var(--d) * 90ms);
+    }
+    .ping {
+      animation: ping 2s var(--ease-out) infinite;
+    }
+  }
+  @keyframes word-up {
+    from {
+      transform: translateY(105%);
+    }
+  }
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+  @keyframes ping {
+    75%,
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
+  }
+</style>

@@ -1,0 +1,72 @@
+---
+import Icon from './Icon.astro';
+import { tagUrl, type TagInfo } from '@/lib/posts';
+
+interface Props {
+  title: string;
+  description: string;
+  tags: TagInfo[];
+  /** Slug of the active tag, if on a tag page. */
+  activeTag?: string;
+}
+
+const { title, description, tags, activeTag } = Astro.props;
+---
+
+<header class="max-w-3xl" data-reveal>
+  <h1 class="text-4xl font-semibold tracking-tighter sm:text-5xl">{title}</h1>
+  <p class="mt-4 text-lg leading-relaxed text-fg-muted">{description}</p>
+</header>
+
+<div class="mt-8 flex flex-col gap-5" data-reveal style="--i: 1">
+  <button type="button" class="search-trigger" data-search-open aria-label="Search posts">
+    <Icon name="search" size={17} />
+    <span class="flex-1 text-left">Search posts…</span>
+    <kbd class="hidden rounded-md border border-border px-1.5 py-0.5 font-mono text-xs sm:inline">⌘K</kbd>
+  </button>
+  {
+    tags.length > 0 && (
+      <nav aria-label="Filter by tag">
+        <ul class="flex flex-wrap gap-2">
+          <li>
+            <a href="/blog/" class="tag" aria-current={!activeTag ? 'page' : undefined}>
+              All
+            </a>
+          </li>
+          {tags.map((tag) => (
+            <li>
+              <a href={tagUrl(tag.name)} class="tag" aria-current={activeTag === tag.slug ? 'page' : undefined}>
+                #{tag.name}
+                <span class="ml-1.5 opacity-60">{tag.count}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )
+  }
+</div>
+
+<style>
+  .search-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 28rem;
+    height: 2.75rem;
+    padding-inline: 1rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 0.75rem;
+    background: var(--surface);
+    color: var(--fg-subtle);
+    font-size: 0.9375rem;
+    transition:
+      border-color 200ms var(--ease-out),
+      color 200ms var(--ease-out);
+  }
+  .search-trigger:hover {
+    border-color: oklch(from var(--accent) l c h / 0.55);
+    color: var(--fg-muted);
+  }
+</style>

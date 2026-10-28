@@ -1,0 +1,62 @@
+---
+import type { Project } from '@/lib/posts';
+
+interface Props {
+  status: Project['data']['status'];
+}
+
+const LABELS = { completed: 'Completed', 'in-progress': 'In progress', planned: 'Planned' } as const;
+const { status } = Astro.props;
+---
+
+<span class:list={['status', `status-${status}`]}>
+  <span class="dot" aria-hidden="true"></span>
+  {LABELS[status]}
+</span>
+
+<style>
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 1.625rem;
+    padding-inline: 0.625rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-subtle);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--fg-muted);
+  }
+  .dot {
+    position: relative;
+    width: 0.4375rem;
+    height: 0.4375rem;
+    border-radius: 50%;
+    background: var(--c);
+  }
+  .status-completed {
+    --c: var(--tip);
+  }
+  .status-in-progress {
+    --c: var(--warning);
+  }
+  .status-planned {
+    --c: var(--fg-subtle);
+  }
+  .status-in-progress .dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--c);
+    animation: ping 1.8s var(--ease-out) infinite;
+  }
+  @keyframes ping {
+    75%,
+    100% {
+      transform: scale(2.6);
+      opacity: 0;
+    }
+  }
+</style>

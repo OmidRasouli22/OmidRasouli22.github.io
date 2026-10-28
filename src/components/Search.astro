@@ -1,0 +1,216 @@
+---
+import Icon from './Icon.astro';
+---
+
+<button type="button" class="icon-btn" data-search-open aria-label="Search (⌘K)">
+  <Icon name="search" />
+</button>
+
+<dialog class="search-dialog" data-search-dialog aria-label="Search posts">
+  <div class="search-panel">
+    <div class="flex items-center gap-3 border-b border-border px-4">
+      <Icon name="search" class="shrink-0 text-fg-subtle" />
+      <input
+        type="search"
+        class="h-14 w-full bg-transparent text-base outline-none placeholder:text-fg-subtle"
+        placeholder="Search posts…"
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="Search posts"
+        aria-controls="search-results"
+        data-search-input
+      />
+      <button type="button" class="icon-btn -mr-2 shrink-0" data-search-close aria-label="Close search">
+        <Icon name="x" />
+      </button>
+    </div>
+    <div class="max-h-[60vh] overflow-y-auto overscroll-contain p-2">
+      <p class="px-3 py-8 text-center text-sm text-fg-subtle" data-search-status>Type to search all posts.</p>
+      <ul id="search-results" role="listbox" class="space-y-1" data-search-results></ul>
+    </div>
+    <div class="hidden items-center gap-4 border-t border-border px-4 py-2.5 font-mono text-[0.6875rem] text-fg-subtle sm:flex">
+      <span><kbd>↑</kbd> <kbd>↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> open</span>
+      <span><kbd>esc</kbd> close</span>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .search-dialog {
+    width: min(40rem, calc(100% - 2rem));
+    max-width: none;
+    margin: 12vh auto auto;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--fg);
+    overflow: visible;
+  }
+  .search-panel {
+    overflow: hidden;
+    border: 1px solid var(--border-strong);
+    border-radius: 1rem;
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+  }
+  .search-dialog::backdrop {
+    background: oklch(0 0 0 / 0.45);
+    backdrop-filter: blur(4px);
+  }
+  .search-dialog[open] {
+    animation: dialog-in 220ms var(--ease-out);
+  }
+  .search-dialog[open]::backdrop {
+    animation: backdrop-in 220ms var(--ease-out);
+  }
+  @keyframes dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+    }
+  }
+  @keyframes backdrop-in {
+    from {
+      opacity: 0;
+    }
+  }
+  input[type='search']::-webkit-search-cancel-button {
+    display: none;
+  }
+  kbd {
+    padding: 0.05rem 0.3rem;
+    border: 1px solid var(--border);
+    border-radius: 0.25rem;
+  }
+  :global(.search-result) {
+    display: block;
+    padding: 0.75rem 0.875rem;
+    border-radius: 0.625rem;
+    transition: background-color 120ms var(--ease-out);
+  }
+  :global([aria-selected='true'] > .search-result) {
+    background: var(--accent-soft);
+  }
+  :global(.search-result mark) {
+    background: none;
+    color: var(--accent);
+    font-weight: 600;
+  }
+</style>
+
+<script>
+  type PagefindResult = { url: string; excerpt: string; meta: { title?: string; date?: string } };
+  type Pagefind = {
+    init: () => Promise<void>;
+    debouncedSearch: (
+      query: string,
+      options?: object,
+      ms?: number,
+    ) => Promise<{ results: { data: () => Promise<PagefindResult> }[] } | null>;
+  };
+
+  let pagefind: Promise<Pagefind | null> | undefined;
+  function loadPagefind() {
+    // The index only exists after `npm run build` (Pagefind runs on dist/).
+    const url = '/pagefind/pagefind.js';
+    pagefind ??= import(/* @vite-ignore */ url)
+      .then(async (mod: Pagefind) => {
+        await mod.init();
+        return mod;
+      })
+      .catch(() => null);
+    return pagefind;
+  }
+
+  const $ = <T extends Element>(selector: string) => document.querySelector<T>(selector);
+  const escapeHtml = (s: string) =>
+    s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+
+  let selected = -1;
+
+  function select(index: number) {
+    const items = [...document.querySelectorAll<HTMLElement>('[data-search-results] > li')];
+    if (!items.length) return;
+    selected = (index + items.length) % items.length;
+    items.forEach((item, i) => item.setAttribute('aria-selected', String(i === selected)));
+    $('[data-search-input]')?.setAttribute('aria-activedescendant', `search-option-${selected}`);
+    items[selected]!.scrollIntoView({ block: 'nearest' });
+  }
+
+  async function runSearch(query: string) {
+    const status = $<HTMLElement>('[data-search-status]')!;
+    const list = $<HTMLUListElement>('[data-search-results]')!;
+    selected = -1;
+    $('[data-search-input]')?.removeAttribute('aria-activedescendant');
+    if (!query.trim()) {
+      list.innerHTML = '';
+      status.hidden = false;
+      status.textContent = 'Type to search all posts.';
+      return;
+    }
+    const pf = await loadPagefind();
+    if (!pf) {
+      status.hidden = false;
+      status.textContent = 'Search is available after `npm run build` — try `npm run preview`.';
+      return;
+    }
+    const search = await pf.debouncedSearch(query, {}, 150);
+    if (search === null) return; // superseded by a newer query
+    const results = await Promise.all(search.results.slice(0, 8).map((r) => r.data()));
+    status.hidden = results.length > 0;
+    status.textContent = results.length ? '' : `No results for “${query}”.`;
+    list.innerHTML = results
+      .map(
+        (r, i) => `<li role="option" id="search-option-${i}" aria-selected="false">
+          <a href="${escapeHtml(r.url)}" class="search-result" tabindex="-1">
+            <span class="block font-medium">${escapeHtml(r.meta.title ?? r.url)}</span>
+            ${r.meta.date ? `<span class="mt-0.5 block font-mono text-xs text-fg-subtle">${escapeHtml(r.meta.date)}</span>` : ''}
+            <span class="mt-1 line-clamp-2 block text-sm text-fg-muted">${r.excerpt}</span>
+          </a>
+        </li>`,
+      )
+      .join('');
+  }
+
+  function open() {
+    const dialog = $<HTMLDialogElement>('[data-search-dialog]');
+    if (!dialog || dialog.open) return;
+    dialog.showModal();
+    const input = $<HTMLInputElement>('[data-search-input]')!;
+    input.select();
+    loadPagefind();
+  }
+
+  function close() {
+    $<HTMLDialogElement>('[data-search-dialog]')?.close();
+  }
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as Element;
+    if (target.closest('[data-search-open]')) open();
+    else if (target.closest('[data-search-close]') || target.closest('.search-result')) close();
+    else if (target.matches('[data-search-dialog]')) close(); // click on backdrop
+  });
+
+  document.addEventListener('input', (event) => {
+    const input = event.target as HTMLInputElement;
+    if (input.matches('[data-search-input]')) runSearch(input.value);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      open();
+      return;
+    }
+    if (!$<HTMLDialogElement>('[data-search-dialog]')?.open) return;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      select(selected + (event.key === 'ArrowDown' ? 1 : -1));
+    } else if (event.key === 'Enter' && selected >= 0) {
+      event.preventDefault();
+      document.querySelectorAll<HTMLAnchorElement>('.search-result')[selected]?.click();
+    }
+  });
+</script>

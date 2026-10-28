@@ -1,0 +1,85 @@
+---
+// Decorative hero backdrop: masked dot grid, two drifting gradient orbs and film grain.
+// Only `transform` is animated; the blur is rasterised once.
+---
+
+<div class="hero-bg" aria-hidden="true">
+  <div class="grid-dots"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="grain"></div>
+</div>
+
+<style>
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    mask-image: linear-gradient(to bottom, black 55%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent);
+  }
+  .grid-dots {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at center, var(--border-strong) 1px, transparent 1.2px);
+    background-size: 24px 24px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 20%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 20%, transparent 75%);
+  }
+  .orb {
+    position: absolute;
+    width: 36rem;
+    height: 36rem;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.35;
+    will-change: transform;
+  }
+  .orb-1 {
+    top: -16rem;
+    left: 50%;
+    margin-left: -30rem;
+    background: radial-gradient(circle, var(--accent), transparent 65%);
+    animation: drift-1 22s var(--ease-in-out) infinite alternate;
+  }
+  .orb-2 {
+    top: -12rem;
+    left: 50%;
+    margin-left: -4rem;
+    background: radial-gradient(circle, var(--accent-2), transparent 65%);
+    animation: drift-2 26s var(--ease-in-out) infinite alternate;
+  }
+  :global([data-theme='light']) .orb {
+    opacity: 0.22;
+  }
+  .grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  @keyframes drift-1 {
+    to {
+      transform: translate3d(8rem, 4rem, 0) scale(1.15);
+    }
+  }
+  @keyframes drift-2 {
+    to {
+      transform: translate3d(-6rem, 6rem, 0) scale(0.9);
+    }
+  }
+  @media (max-width: 40rem) {
+    .orb {
+      width: 24rem;
+      height: 24rem;
+    }
+    .orb-1 {
+      margin-left: -18rem;
+    }
+    .orb-2 {
+      margin-left: -2rem;
+    }
+  }
+</style>

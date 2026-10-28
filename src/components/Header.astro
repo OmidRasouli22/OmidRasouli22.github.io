@@ -1,0 +1,78 @@
+---
+import { NAV, SITE } from '@/config';
+import Search from './Search.astro';
+import ThemeToggle from './ThemeToggle.astro';
+
+const path = Astro.url.pathname;
+const isActive = (href: string) => path.startsWith(href.replace(/\/$/, ''));
+---
+
+<header class="site-header sticky top-0 z-50" transition:name="header" transition:animate="none">
+  <div class="container-page flex h-(--header-h) items-center justify-between gap-2">
+    <a href="/" class="group flex items-center gap-2.5 rounded-full">
+      <span class="logo grid size-8 place-items-center rounded-[0.6rem] font-mono text-[0.8rem] font-semibold" aria-hidden="true">
+        OR
+      </span>
+      <span class="sr-only text-[0.95rem] font-semibold tracking-tight sm:not-sr-only">{SITE.name}</span>
+    </a>
+
+    <div class="flex items-center gap-1 sm:gap-2">
+      <nav aria-label="Main">
+        <ul class="flex items-center">
+          {
+            NAV.map(({ label, href }) => {
+              const active = isActive(href);
+              return (
+                <li>
+                  <a
+                    href={href}
+                    class:list={[
+                      'relative block rounded-full px-3 py-1.5 text-sm font-medium transition-colors duration-200',
+                      active ? 'text-fg' : 'text-fg-muted hover:text-fg',
+                    ]}
+                    aria-current={active ? 'page' : undefined}
+                  >
+                    {active && (
+                      <span
+                        class="nav-pill absolute inset-0 -z-10 rounded-full"
+                        transition:name="nav-pill"
+                      />
+                    )}
+                    {label}
+                  </a>
+                </li>
+              );
+            })
+          }
+        </ul>
+      </nav>
+      <span class="mx-1 hidden h-5 w-px bg-border sm:block" aria-hidden="true"></span>
+      <Search />
+      <ThemeToggle />
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    background: oklch(from var(--bg) l c h / 0.72);
+    backdrop-filter: blur(14px) saturate(1.6);
+    -webkit-backdrop-filter: blur(14px) saturate(1.6);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    color: var(--accent-contrast);
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.25),
+      0 4px 14px -4px var(--glow);
+    transition: transform 300ms var(--ease-out);
+  }
+  a:hover .logo {
+    transform: rotate(-6deg) scale(1.06);
+  }
+  .nav-pill {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+  }
+</style>

@@ -1,0 +1,36 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  prev?: string | undefined;
+  next?: string | undefined;
+  current: number;
+  total: number;
+}
+
+const { prev, next, current, total } = Astro.props;
+---
+
+{
+  total > 1 && (
+    <nav class="mt-14 flex items-center justify-between gap-4" aria-label="Pagination">
+      {prev ? (
+        <a href={prev} class="btn btn-ghost" rel="prev">
+          <Icon name="arrow-left" size={16} /> Newer
+        </a>
+      ) : (
+        <span />
+      )}
+      <span class="font-mono text-sm text-fg-subtle">
+        Page {current} of {total}
+      </span>
+      {next ? (
+        <a href={next} class="btn btn-ghost" rel="next">
+          Older <Icon name="arrow-right" size={16} data-slide />
+        </a>
+      ) : (
+        <span />
+      )}
+    </nav>
+  )
+}

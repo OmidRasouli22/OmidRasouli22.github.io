@@ -1,0 +1,92 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const items = Astro.props.headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+---
+
+{
+  items.length > 1 && (
+    <>
+      {/* Mobile / tablet: collapsible */}
+      <details class="toc-mobile rounded-xl border border-border bg-bg-subtle lg:hidden">
+        <summary class="flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-medium">
+          On this page
+          <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </summary>
+        <ol class="space-y-2 border-t border-border px-4 py-3 text-sm">
+          {items.map((h) => (
+            <li class:list={{ 'pl-4': h.depth === 3 }}>
+              <a href={`#${h.slug}`} class="text-fg-muted hover:text-fg">
+                {h.text}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </details>
+
+      {/* Desktop: sticky with scroll-spy */}
+      <nav class="toc hidden lg:block" aria-label="Table of contents" data-toc>
+        <p class="eyebrow mb-4 text-fg-subtle!">On this page</p>
+        <ol class="space-y-0.5 border-l border-border text-[0.8125rem]">
+          {items.map((h) => (
+            <li>
+              <a
+                href={`#${h.slug}`}
+                data-toc-link={h.slug}
+                class:list={['toc-link block py-1 leading-snug', h.depth === 3 ? 'pl-7' : 'pl-4']}
+              >
+                {h.text}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </>
+  )
+}
+
+<style>
+  .toc-mobile summary {
+    list-style: none;
+  }
+  .toc-mobile summary::-webkit-details-marker {
+    display: none;
+  }
+  .chevron {
+    transition: transform 250ms var(--ease-out);
+  }
+  .toc-mobile[open] .chevron {
+    transform: rotate(180deg);
+  }
+  .toc-link {
+    position: relative;
+    color: var(--fg-subtle);
+    transition: color 200ms var(--ease-out);
+  }
+  .toc-link::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--accent);
+    transform: scaleY(0);
+    transition: transform 250ms var(--ease-out);
+  }
+  .toc-link:hover {
+    color: var(--fg);
+  }
+  .toc-link[aria-current='true'] {
+    color: var(--fg);
+  }
+  .toc-link[aria-current='true']::before {
+    transform: scaleY(1);
+  }
+</style>

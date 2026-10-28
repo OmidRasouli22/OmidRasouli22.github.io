@@ -1,0 +1,30 @@
+---
+import { SITE, SOCIALS } from '@/config';
+import Icon from './Icon.astro';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="mt-24 border-t border-border">
+  <div class="container-page flex flex-col-reverse items-start justify-between gap-6 py-10 sm:flex-row sm:items-center">
+    <p class="text-sm text-fg-subtle">
+      © {year} {SITE.name}. Built with <a href="https://astro.build" class="link-underline text-fg-muted hover:text-fg">Astro</a>.
+    </p>
+    <ul class="-ml-2.5 flex items-center gap-1 sm:ml-0">
+      {
+        SOCIALS.map(({ label, href, icon }) => (
+          <li>
+            <a href={href} class="icon-btn" aria-label={label} rel="me noopener" target={href.startsWith('http') ? '_blank' : undefined}>
+              <Icon name={icon} />
+            </a>
+          </li>
+        ))
+      }
+      <li>
+        <a href="/rss.xml" class="icon-btn" aria-label="RSS feed">
+          <Icon name="rss" />
+        </a>
+      </li>
+    </ul>
+  </div>
+</footer>

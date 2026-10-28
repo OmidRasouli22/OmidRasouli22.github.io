@@ -1,0 +1,159 @@
+# omidrasouli22.github.io
+
+Personal website and technical blog of **Omid Rasouli**, built with [Astro](https://astro.build), Tailwind CSS and MDX, deployed to GitHub Pages.
+
+**Live:** https://omidrasouli22.github.io
+
+## Quick start
+
+Requires Node.js 22.12+ (CI uses Node 24).
+
+```bash
+npm install
+npm run dev        # http://localhost:4321 (drafts are visible here)
+npm run build      # type-check, build to dist/, build the search index
+npm run preview    # serve dist/ locally (use this to try search)
+```
+
+> Search is powered by [Pagefind](https://pagefind.app), which indexes the **built** site. In `npm run dev` the
+> search dialog tells you to build first; use `npm run build && npm run preview` to test it.
+
+In Astro 7, `astro dev` runs in the background. Stop it with `npx astro dev stop`.
+
+## Writing a post
+
+1. Copy `src/content/blog/_template.mdx` to `src/content/blog/my-post-slug.mdx`.
+   The file name becomes the URL: `/blog/my-post-slug/`.
+2. Fill in the frontmatter:
+
+   | Field         | Required | Notes                                                                  |
+   | ------------- | -------- | ---------------------------------------------------------------------- |
+   | `title`       | yes      | ≤ 120 chars                                                            |
+   | `description` | yes      | ≤ 220 chars; used on cards, in search, RSS and social previews         |
+   | `pubDate`     | yes      | `2026-01-31`                                                           |
+   | `updatedDate` | no       | Shown as "Updated …"                                                   |
+   | `tags`        | no       | `[machine-learning, python]`; each tag gets a page at `/tags/<tag>/`   |
+   | `draft`       | no       | `true` = visible in dev only, never built for production               |
+   | `cover`       | no       | Relative path to an image, e.g. `../../assets/blog/my-post-slug/cover.png` |
+   | `coverAlt`    | if cover | Alt text for the cover                                                 |
+
+3. Put images in `src/assets/blog/my-post-slug/` and reference them with relative paths. They are resized and
+   converted to WebP automatically.
+4. Remove `draft: true` (or set it to `false`) to publish.
+
+`src/content/blog/example-post-features.mdx` demonstrates everything available. Delete it (or set `draft: true`)
+once you have real posts.
+
+### What you can use in a post
+
+- **Code blocks** with a language (` ```python `) are highlighted at build time and get a copy button.
+- **Math**: `$inline$` and `$$display$$`, rendered with KaTeX. The KaTeX CSS only loads on posts that use math.
+- **Callouts** (no import needed):
+  ```mdx
+  <Callout type="tip" title="Optional title">Text with **markdown**.</Callout>
+  ```
+  `type` is `note` (default), `tip`, `warning` or `danger`.
+- **Images with captions**: `import { Image } from 'astro:assets'` and wrap it in a `<figure>`. See the example post.
+- Tables, footnotes, task lists and strikethrough (GitHub-flavoured Markdown).
+
+Reading time, the table of contents, heading anchors, prev/next links, related posts (by shared tags), the RSS
+entry, sitemap entry, search index entry and the Open Graph image are all generated automatically.
+
+## Adding a project
+
+Create `src/content/projects/my-project.mdx` (URL: `/projects/my-project/`):
+
+```mdx
+---
+title: My Project
+description: One or two sentences.
+status: in-progress        # completed | in-progress | planned
+stack: [Python, Databricks]
+repo: https://github.com/OmidRasouli22/my-project   # optional
+demo: https://example.com                           # optional
+featured: true             # show on the home page (max 4 shown)
+order: 1                   # lower = listed first
+context: Data engineering  # optional label on the card
+period: 2025 – 2026        # optional
+---
+
+## Overview
+
+Write the case study here — same Markdown/MDX features as blog posts.
+```
+
+## Changing your info, colours and fonts
+
+Everything personal lives in **`src/config.ts`**:
+
+- `SITE`: name, headline (wrap words in `*asterisks*` for the gradient), intro, email, CV path, posts per page
+- `SOCIALS`: links in the footer and on the About page
+- `NAV`: header links
+- `ABOUT`: bio paragraphs, education, skills
+- `THEME`: **accent colour**
+
+### Accent colour
+
+The whole palette (both themes, gradients, focus rings, OG images) derives from two OKLCH hue numbers:
+
+```ts
+export const THEME = {
+  accentHue: 200,  // primary (links, focus, gradient start)
+  accentHue2: 290, // gradient end
+};
+```
+
+Presets are listed in the comment above `THEME`: Signal 200/290, Ember 65/15, Acid 130/175, Ocean 240/275,
+Rose 350/300. Any hue 0–360 works. Lightness and chroma are tuned per theme in `src/styles/global.css`, so
+contrast stays readable whichever hue you pick.
+
+### Other design tokens
+
+All colours, radii and easing curves are CSS variables at the top of `src/styles/global.css` (`:root` = light,
+`[data-theme='dark']` = dark), exposed to Tailwind as `bg-surface`, `text-fg-muted`, `border-border`, `text-accent`,
+and so on. Fonts are self-hosted Geist / Geist Mono via Fontsource (`src/layouts/BaseLayout.astro`). The code
+highlighting themes are set in `astro.config.mjs` → `markdown.shikiConfig`.
+
+The favicon is `public/favicon.svg`. Its gradient colours are hard-coded, so update them if you change the accent.
+
+## Deployment
+
+Every push to `main` triggers `.github/workflows/deploy.yml`:
+
+1. `withastro/action` installs dependencies and runs `npm run build` (type check → Astro build → Pagefind index).
+2. `actions/deploy-pages` publishes `dist/` to GitHub Pages.
+
+**One-time setup:** in the GitHub repo go to **Settings → Pages → Build and deployment → Source** and choose
+**GitHub Actions**. The repository must be named `OmidRasouli22.github.io`, so no `base` path is needed. If you ever
+deploy under a different repo name, set `base: '/repo-name'` in `astro.config.mjs`.
+
+You can also re-run a deployment manually from the **Actions** tab (`workflow_dispatch`).
+
+## Project structure
+
+```
+src/
+  config.ts                 ← your info, nav, socials, accent colour
+  content.config.ts         ← Zod schemas for blog posts and projects
+  content/blog/             ← posts (.mdx); files starting with "_" are ignored
+  content/projects/         ← project case studies
+  assets/                   ← images used by posts/projects (optimised at build)
+  components/               ← UI components (cards, search, TOC, callout, …)
+  layouts/                  ← BaseLayout (SEO, theme, transitions), PostLayout
+  lib/posts.ts              ← draft filtering, reading time, tags, related posts
+  lib/og.ts                 ← Open Graph image renderer (Satori)
+  pages/                    ← routes: /, /blog, /blog/[slug], /projects, /about, /tags, rss.xml, robots.txt, og/*.png
+  plugins/                  ← small remark/rehype plugins (math flag, heading anchors, task-list labels)
+  styles/global.css         ← design tokens, base styles, article typography
+public/                     ← copied as-is (favicon, cv.pdf)
+```
+
+## Notes on the setup
+
+- **Markdown pipeline:** Astro 7 defaults to its native Sätteri Markdown processor, which does not run
+  remark/rehype plugins. This site opts into the classic `unified()` pipeline (`@astrojs/markdown-remark`) so
+  that KaTeX and the heading-anchor plugins work.
+- **Motion:** page transitions use the View Transitions API (Astro `ClientRouter`), with shared-element morphs
+  for post/project titles and covers. Scroll reveals use one IntersectionObserver. Everything animates only
+  `transform`/`opacity` and is disabled under `prefers-reduced-motion`.
+- **No-flash theming:** an inline script in `<head>` applies the saved/system theme before first paint.

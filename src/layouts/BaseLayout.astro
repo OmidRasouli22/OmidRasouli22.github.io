@@ -1,0 +1,189 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import type { TransitionAnimationPair } from 'astro';
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
+import '@/styles/global.css';
+import geistLatin from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import { SITE, THEME } from '@/config';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  /** Absolute or root-relative path to the OG image. */
+  image?: string;
+  imageAlt?: string;
+  type?: 'website' | 'article';
+  publishedTime?: Date;
+  modifiedTime?: Date;
+  tags?: readonly string[];
+  /** Extra JSON-LD object(s) for this page. */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = SITE.description,
+  image = '/og/default.png',
+  imageAlt = `${SITE.name} — ${SITE.tagline}`,
+  type = 'website',
+  publishedTime,
+  modifiedTime,
+  tags = [],
+  jsonLd,
+  noindex = false,
+} = Astro.props;
+
+const fullTitle = title ? `${title} · ${SITE.title}` : `${SITE.title} — ${SITE.tagline.replace(/\.$/, '')}`;
+// GitHub Pages serves directories with a trailing slash, so that is the canonical form.
+const path = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+const canonical = new URL(path, Astro.site);
+const ogImage = new URL(image, Astro.site);
+
+const websiteLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.title,
+  url: Astro.site?.href,
+  author: { '@type': 'Person', name: SITE.name, url: Astro.site?.href },
+};
+const ldBlocks = [websiteLd, ...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [])];
+
+const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
+const pageTransition: TransitionAnimationPair = {
+  old: { name: 'vt-fade-out', duration: '160ms', easing: 'ease-in', fillMode: 'both' },
+  new: { name: 'vt-fade-in', duration: '320ms', easing: ease, delay: '60ms', fillMode: 'both' },
+};
+const mainAnimation = { forwards: pageTransition, backwards: pageTransition };
+---
+
+<!doctype html>
+<html
+  lang={SITE.locale}
+  data-theme="dark"
+  style={`--accent-h: ${THEME.accentHue}; --accent-h2: ${THEME.accentHue2};`}
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="generator" content={Astro.generator} />
+    <meta name="author" content={SITE.name} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.title} — Blog`} href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="preload" href={geistLatin} as="font" type="font/woff2" crossorigin />
+    <meta name="theme-color" content="#0b0c10" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fbfbfc" media="(prefers-color-scheme: light)" />
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={SITE.title} />
+    <meta property="og:title" content={title ?? SITE.title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={imageAlt} />
+    <meta property="og:locale" content="en_US" />
+    {publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
+    {modifiedTime && <meta property="article:modified_time" content={modifiedTime.toISOString()} />}
+    {type === 'article' && <meta property="article:author" content={SITE.name} />}
+    {tags.map((tag) => <meta property="article:tag" content={tag} />)}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title ?? SITE.title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={imageAlt} />
+
+    {ldBlocks.map((ld) => <script type="application/ld+json" is:inline set:html={JSON.stringify(ld)} />)}
+
+    <!-- Theme: runs before paint so there is no flash of the wrong theme. -->
+    <script is:inline>
+      (() => {
+        const query = matchMedia('(prefers-color-scheme: light)');
+        const stored = () => {
+          try {
+            return localStorage.getItem('theme');
+          } catch {
+            return null;
+          }
+        };
+        const apply = (doc) => {
+          doc.documentElement.dataset.theme = stored() ?? (query.matches ? 'light' : 'dark');
+          doc.documentElement.classList.add('js');
+        };
+        apply(document);
+        if (window.__themeInit) return;
+        window.__themeInit = true;
+        document.addEventListener('astro:before-swap', (e) => apply(e.newDocument));
+        query.addEventListener('change', () => !stored() && apply(document));
+      })();
+    </script>
+
+    <slot name="head" />
+    <ClientRouter />
+  </head>
+  <body class="flex min-h-dvh flex-col">
+    <a
+      href="#main"
+      class="sr-only z-100 rounded-full bg-fg px-4 py-2 text-sm font-medium text-bg focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+    >
+      Skip to content
+    </a>
+    <Header />
+    <main id="main" class="flex-1" transition:name="main" transition:animate={mainAnimation}>
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      // Scroll reveal: fades in [data-reveal] elements as they enter the viewport.
+      let observer: IntersectionObserver | undefined;
+
+      function initReveal() {
+        observer?.disconnect();
+        const items = document.querySelectorAll<HTMLElement>('[data-reveal]:not(.is-visible)');
+        if (!('IntersectionObserver' in window)) {
+          items.forEach((el) => el.classList.add('is-visible'));
+          return;
+        }
+        observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              entry.target.classList.add('is-visible');
+              observer?.unobserve(entry.target);
+            }
+          },
+          { rootMargin: '0px 0px -6% 0px', threshold: 0.08 },
+        );
+        items.forEach((el) => observer!.observe(el));
+      }
+
+      // Card spotlight: tracks the pointer with CSS variables consumed by a transform.
+      let frame = 0;
+      document.addEventListener('pointermove', (event) => {
+        if (event.pointerType !== 'mouse') return;
+        const card = (event.target as Element | null)?.closest<HTMLElement>('.card');
+        if (!card) return;
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+          const rect = card.getBoundingClientRect();
+          card.style.setProperty('--mx', `${event.clientX - rect.left}px`);
+          card.style.setProperty('--my', `${event.clientY - rect.top}px`);
+        });
+      });
+
+      document.addEventListener('astro:page-load', initReveal);
+    </script>
+  </body>
+</html>

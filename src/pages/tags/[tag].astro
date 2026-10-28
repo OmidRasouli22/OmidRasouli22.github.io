@@ -1,0 +1,36 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import BlogHeader from '@/components/BlogHeader.astro';
+import PostCard from '@/components/PostCard.astro';
+import { getPosts, getTags, slugify } from '@/lib/posts';
+
+export const getStaticPaths = (async () => {
+  const posts = await getPosts();
+  const tags = getTags(posts);
+  return tags.map((tag) => ({
+    params: { tag: tag.slug },
+    props: {
+      tag,
+      tags,
+      posts: posts.filter((post) => post.data.tags.some((t) => slugify(t) === tag.slug)),
+    },
+  }));
+}) satisfies GetStaticPaths;
+
+const { tag, tags, posts } = Astro.props;
+---
+
+<BaseLayout title={`#${tag.name}`} description={`Posts tagged “${tag.name}”.`}>
+  <section class="container-page pt-14 sm:pt-20">
+    <BlogHeader
+      title={`#${tag.name}`}
+      description={`${tag.count} ${tag.count === 1 ? 'post' : 'posts'} tagged “${tag.name}”.`}
+      tags={tags}
+      activeTag={tag.slug}
+    />
+    <div class="mt-12 grid gap-4 md:grid-cols-2">
+      {posts.map((post, i) => <PostCard post={post} index={i} as="h2" />)}
+    </div>
+  </section>
+</BaseLayout>

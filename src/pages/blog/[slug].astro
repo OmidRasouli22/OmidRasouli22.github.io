@@ -1,0 +1,35 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import PostLayout from '@/layouts/PostLayout.astro';
+import Callout from '@/components/Callout.astro';
+import { getPosts, getRelatedPosts } from '@/lib/posts';
+
+export const getStaticPaths = (async () => {
+  const posts = await getPosts();
+  return posts.map((post, i) => ({
+    params: { slug: post.id },
+    props: {
+      post,
+      // `posts` is newest-first.
+      next: posts[i - 1],
+      prev: posts[i + 1],
+      related: getRelatedPosts(post, posts),
+    },
+  }));
+}) satisfies GetStaticPaths;
+
+const { post, prev, next, related } = Astro.props;
+const { Content, headings, remarkPluginFrontmatter } = await render(post);
+---
+
+<PostLayout
+  post={post}
+  headings={headings}
+  hasMath={Boolean(remarkPluginFrontmatter.hasMath)}
+  prev={prev}
+  next={next}
+  related={related}
+>
+  <Content components={{ Callout }} />
+</PostLayout>

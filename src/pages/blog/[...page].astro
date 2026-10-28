@@ -1,0 +1,41 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import BlogHeader from '@/components/BlogHeader.astro';
+import Pagination from '@/components/Pagination.astro';
+import PostCard from '@/components/PostCard.astro';
+import { SITE } from '@/config';
+import { getPosts, getTags } from '@/lib/posts';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = await getPosts();
+  return paginate(posts, { pageSize: SITE.postsPerPage, props: { tags: getTags(posts) } });
+}) satisfies GetStaticPaths;
+
+const { page, tags } = Astro.props;
+const title = page.currentPage === 1 ? 'Blog' : `Blog — page ${page.currentPage}`;
+---
+
+<BaseLayout title={title} description="Articles on machine learning, AutoML, data engineering and software.">
+  <section class="container-page pt-14 sm:pt-20">
+    <BlogHeader
+      title="Blog"
+      description="Notes and deep dives on machine learning, AutoML, data engineering and the software that ties them together."
+      tags={tags}
+    />
+
+    {
+      page.data.length > 0 ? (
+        <div class="mt-12 grid gap-4 md:grid-cols-2">
+          {page.data.map((post, i) => (
+            <PostCard post={post} index={i} as="h2" />
+          ))}
+        </div>
+      ) : (
+        <p class="mt-12 text-fg-muted">No posts yet.</p>
+      )
+    }
+
+    <Pagination prev={page.url.prev} next={page.url.next} current={page.currentPage} total={page.lastPage} />
+  </section>
+</BaseLayout>

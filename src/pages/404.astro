@@ -1,0 +1,26 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import HeroBackground from '@/components/HeroBackground.astro';
+import Icon from '@/components/Icon.astro';
+---
+
+<BaseLayout title="Page not found" description="This page does not exist." noindex>
+  <section class="relative isolate">
+    <HeroBackground />
+    <div class="container-page flex min-h-[60vh] flex-col items-start justify-center py-24">
+      <p class="eyebrow">Error 404</p>
+      <h1 class="mt-3 text-5xl font-semibold tracking-tighter sm:text-7xl">
+        <span class="text-gradient">Lost</span> in the latent space.
+      </h1>
+      <p class="mt-6 max-w-xl text-lg text-fg-muted">
+        The page you're looking for doesn't exist or has moved. Try the blog or head back home.
+      </p>
+      <div class="mt-10 flex flex-wrap gap-3">
+        <a href="/" class="btn btn-primary">
+          <Icon name="arrow-left" size={16} /> Back home
+        </a>
+        <a href="/blog/" class="btn btn-ghost">Read the blog</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

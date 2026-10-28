@@ -1,0 +1,57 @@
+---
+import { projectUrl, type Project } from '@/lib/posts';
+import Icon from './Icon.astro';
+import StatusBadge from './StatusBadge.astro';
+
+interface Props {
+  project: Project;
+  index?: number;
+  as?: 'h2' | 'h3';
+}
+
+const { project, index = 0, as: Heading = 'h3' } = Astro.props;
+const { title, description, status, stack, repo, demo, context } = project.data;
+---
+
+<div data-reveal style={`--i: ${index}`} class="h-full">
+  <article class="card h-full">
+    <div class="card-glow" aria-hidden="true"></div>
+    <div class="card-inner flex flex-col p-5 sm:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <StatusBadge status={status} />
+        {context && <span class="font-mono text-xs text-fg-subtle">{context}</span>}
+      </div>
+      <Heading class="mt-4 w-fit text-lg leading-snug font-semibold tracking-tight" transition:name={`project-title-${project.id}`}>
+        <a href={projectUrl(project)} class="stretched-link">{title}</a>
+      </Heading>
+      <p class="mt-2 text-[0.9375rem] leading-relaxed text-fg-muted">{description}</p>
+      {
+        stack.length > 0 && (
+          <ul class="mt-4 flex flex-wrap gap-1.5" aria-label="Tech stack">
+            {stack.map((tech) => (
+              <li class="tag">{tech}</li>
+            ))}
+          </ul>
+        )
+      }
+      {
+        (repo || demo) && (
+          <div class="relative z-3 mt-auto flex gap-4 pt-5 text-sm font-medium">
+            {repo && (
+              <a href={repo} class="inline-flex items-center gap-1.5 text-fg-muted hover:text-fg" target="_blank" rel="noopener">
+                <Icon name="github" size={16} />
+                <span class="link-underline">Code</span>
+              </a>
+            )}
+            {demo && (
+              <a href={demo} class="inline-flex items-center gap-1.5 text-fg-muted hover:text-fg" target="_blank" rel="noopener">
+                <Icon name="arrow-up-right" size={16} />
+                <span class="link-underline">Demo</span>
+              </a>
+            )}
+          </div>
+        )
+      }
+    </div>
+  </article>
+</div>

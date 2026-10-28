@@ -1,0 +1,21 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ProjectCard from '@/components/ProjectCard.astro';
+import { getProjects } from '@/lib/posts';
+
+const projects = await getProjects();
+---
+
+<BaseLayout title="Projects" description="AI, AutoML and data engineering projects by Omid Rasouli.">
+  <section class="container-page pt-14 sm:pt-20">
+    <header class="max-w-3xl">
+      <h1 class="text-4xl font-semibold tracking-tighter sm:text-5xl" data-reveal>Projects</h1>
+      <p class="mt-4 text-lg leading-relaxed text-fg-muted" data-reveal style="--i: 1">
+        Research, ML systems and data pipelines — finished, in progress and planned.
+      </p>
+    </header>
+    <div class="mt-12 grid gap-4 md:grid-cols-2">
+      {projects.map((project, i) => <ProjectCard project={project} index={i} as="h2" />)}
+    </div>
+  </section>
+</BaseLayout>

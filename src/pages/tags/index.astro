@@ -1,0 +1,25 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getPosts, getTags, tagUrl } from '@/lib/posts';
+
+const tags = getTags(await getPosts());
+---
+
+<BaseLayout title="Tags" description="Browse all blog posts by topic.">
+  <section class="container-page pt-14 sm:pt-20">
+    <h1 class="text-4xl font-semibold tracking-tighter sm:text-5xl" data-reveal>Tags</h1>
+    <p class="mt-4 text-lg text-fg-muted" data-reveal style="--i: 1">Browse posts by topic.</p>
+    <ul class="mt-10 flex flex-wrap gap-2.5" data-reveal style="--i: 2">
+      {
+        tags.map((tag) => (
+          <li>
+            <a href={tagUrl(tag.name)} class="tag h-9! px-4! text-sm!">
+              #{tag.name}
+              <span class="ml-2 opacity-60">{tag.count}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>
