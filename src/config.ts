@@ -9,11 +9,11 @@ export const SITE = {
   /** Default <title> suffix and OG site name. */
   title: 'Omid Rasouli',
   /** One-line positioning shown in the hero. */
-  tagline: 'AI Engineer building data pipelines and ML systems.',
+  tagline: 'M.Sc. AI student at Freiburg, building ML systems and data pipelines.',
   /** Hero headline. Words in *asterisks* are set in the italic serif. */
-  headline: 'AI Engineer building *data pipelines* and *ML systems*.',
+  headline: 'M.Sc. AI student at Freiburg, building *ML systems* and *data pipelines*.',
   /** Small line above the headline. */
-  eyebrow: 'M.Sc. AI · University of Freiburg',
+  eyebrow: 'AI & data engineering',
   /** Availability badge in the hero. Set to '' to hide it. */
   availability: 'Open to roles in Germany',
   /** "Now" line at the bottom of the hero. Set text to '' to hide it. */
@@ -26,7 +26,7 @@ export const SITE = {
     'Personal site and blog of Omid Rasouli, M.Sc. AI student at the University of Freiburg and software engineer. Writing about machine learning, AutoML and data engineering.',
   /** Short intro paragraph under the hero headline. */
   intro:
-    "I've worked as a software engineer for over four years, mostly in Python and TypeScript, and I'm now doing an M.Sc. in Artificial Intelligence at the University of Freiburg. I build data pipelines and ML systems, and I write here about what I learn.",
+    "I've also worked as a software engineer for over four years, mostly in Python and TypeScript, including freelance work. This is where I write about what I'm learning in machine learning and data engineering.",
   location: 'Freiburg, Germany',
   email: 'omidrasouli1998@gmail.com',
   /** Put your CV at public/cv.pdf. TODO: add the file. */

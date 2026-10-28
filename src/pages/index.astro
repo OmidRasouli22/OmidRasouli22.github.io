@@ -11,10 +11,15 @@ import { getPosts, getProjects } from '@/lib/posts';
 const posts = (await getPosts()).slice(0, 4);
 const projects = (await getProjects()).filter((p) => p.data.featured).slice(0, 4);
 
-// Split the headline into words so each one can slide up; *starred* words use the serif.
+// Split the headline into words so each one can slide up. *Starred* phrases use the serif and
+// stay together on one line.
 const tokens = SITE.headline
   .split('*')
-  .flatMap((segment, i) => segment.split(/(\s+)/).map((text) => ({ text, highlight: i % 2 === 1 })))
+  .flatMap((segment, i) =>
+    i % 2 === 1
+      ? [{ text: segment, highlight: true }]
+      : segment.split(/(\s+)/).map((text) => ({ text, highlight: false })),
+  )
   .filter((token) => token.text);
 let wordIndex = 0;
 
@@ -24,7 +29,7 @@ const personLd = {
   name: SITE.name,
   url: SITE.url,
   email: `mailto:${SITE.email}`,
-  jobTitle: 'AI Engineer',
+  jobTitle: 'M.Sc. Artificial Intelligence student',
   alumniOf: 'Shiraz University of Technology',
   affiliation: { '@type': 'CollegeOrUniversity', name: 'University of Freiburg' },
   sameAs: SOCIALS.filter((s) => s.href.startsWith('http')).map((s) => s.href),
@@ -50,14 +55,14 @@ const personLd = {
         <p class="hero-in mt-7 font-mono text-[0.8125rem] text-fg-muted" style="--d: 1">
           {SITE.name} <span class="text-fg-subtle">/</span> {SITE.eyebrow}
         </p>
-        <h1 class="mt-4 text-[2.75rem] leading-[1.02] font-semibold tracking-tighter sm:text-7xl lg:text-[5.25rem]">
+        <h1 class="mt-4 text-[2.75rem] leading-[1.02] font-semibold tracking-tighter sm:text-7xl lg:text-[4.75rem]">
           {
             tokens.map(({ text, highlight }) =>
               /^\s+$/.test(text) ? (
                 ' '
               ) : (
                 <span class="word-mask">
-                  <span class:list={['word', { 'serif text-gradient': highlight }]} style={`--w: ${wordIndex++}`}>
+                  <span class:list={['word', { 'serif text-gradient whitespace-nowrap': highlight }]} style={`--w: ${wordIndex++}`}>
                     {text}
                   </span>
                 </span>
