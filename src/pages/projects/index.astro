@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import Emph from '@/components/Emph.astro';
 import ProjectCard from '@/components/ProjectCard.astro';
 import { getProjects } from '@/lib/posts';
 
@@ -9,9 +10,10 @@ const projects = await getProjects();
 <BaseLayout title="Projects" description="AI, AutoML and data engineering projects by Omid Rasouli.">
   <section class="container-page pt-14 sm:pt-20">
     <header class="max-w-3xl">
-      <h1 class="text-4xl font-semibold tracking-tighter sm:text-5xl" data-reveal>Projects</h1>
-      <p class="mt-4 text-lg leading-relaxed text-fg-muted" data-reveal style="--i: 1">
-        Research, ML systems and data pipelines — finished, in progress and planned.
+      <p class="eyebrow" data-decode>Work</p>
+      <h1 class="mt-4 text-4xl font-semibold tracking-tighter sm:text-6xl" data-reveal>Selected <Emph text="*projects*" /></h1>
+      <p class="mt-5 text-lg leading-relaxed text-fg-muted" data-reveal style="--i: 1">
+        Research, ML systems and data pipelines. Some finished, some in progress, some still on the whiteboard.
       </p>
     </header>
     <div class="mt-12 grid gap-4 md:grid-cols-2">

@@ -79,14 +79,14 @@ period: 2025 – 2026        # optional
 
 ## Overview
 
-Write the case study here — same Markdown/MDX features as blog posts.
+Write the case study here. Everything that works in blog posts works here too.
 ```
 
 ## Changing your info, colours and fonts
 
 Everything personal lives in **`src/config.ts`**:
 
-- `SITE`: name, headline (wrap words in `*asterisks*` for the gradient), intro, email, CV path, posts per page
+- `SITE`: name, headline (words in `*asterisks*` get the italic serif), intro, email, CV path, posts per page
 - `SOCIALS`: links in the footer and on the About page
 - `NAV`: header links
 - `ABOUT`: bio paragraphs, education, skills
@@ -111,7 +111,8 @@ contrast stays readable whichever hue you pick.
 
 All colours, radii and easing curves are CSS variables at the top of `src/styles/global.css` (`:root` = light,
 `[data-theme='dark']` = dark), exposed to Tailwind as `bg-surface`, `text-fg-muted`, `border-border`, `text-accent`,
-and so on. Fonts are self-hosted Geist / Geist Mono via Fontsource (`src/layouts/BaseLayout.astro`). The code
+and so on. Fonts are Geist, Geist Mono and Instrument Serif (italic, for emphasis), self-hosted via Fontsource
+(`src/layouts/BaseLayout.astro`). The code
 highlighting themes are set in `astro.config.mjs` → `markdown.shikiConfig`.
 
 The favicon is `public/favicon.svg`. Its gradient colours are hard-coded, so update them if you change the accent.
@@ -148,12 +149,22 @@ src/
 public/                     ← copied as-is (favicon, cv.pdf)
 ```
 
+## Design notes
+
+- **Hero background** (`src/lib/contour-field.ts`): contour lines of a slowly moving "loss surface" with a few
+  particles doing gradient descent on it. The mouse adds a minimum, so lines bend toward it. It runs at 30 fps,
+  stops when it's off-screen, and shows a still frame for people who prefer reduced motion. `BLOBS` controls the
+  shape of the landscape and `LEVEL_STEP` the line density.
+- **Headings:** in `SectionHeader`, `BlogHeader` and the footer, `*word*` sets that word in the italic serif. One per
+  heading is plenty.
+- **Small labels** with `data-decode` scramble into place the first time they scroll into view.
+- **Page transitions** use Astro's `ClientRouter`. Post titles in the list morph into the post header.
+- Everything respects `prefers-reduced-motion`.
+
 ## Notes on the setup
 
-- **Markdown pipeline:** Astro 7 defaults to its native Sätteri Markdown processor, which does not run
-  remark/rehype plugins. This site opts into the classic `unified()` pipeline (`@astrojs/markdown-remark`) so
-  that KaTeX and the heading-anchor plugins work.
-- **Motion:** page transitions use the View Transitions API (Astro `ClientRouter`), with shared-element morphs
-  for post/project titles and covers. Scroll reveals use one IntersectionObserver. Everything animates only
-  `transform`/`opacity` and is disabled under `prefers-reduced-motion`.
-- **No-flash theming:** an inline script in `<head>` applies the saved/system theme before first paint.
+- **Markdown pipeline:** Astro 7 defaults to its native Sätteri Markdown processor, which doesn't run
+  remark/rehype plugins. This site switches to the `unified()` pipeline (`@astrojs/markdown-remark`) so KaTeX and
+  the heading anchors work.
+- **Theme:** a small inline script in `<head>` applies the saved or system theme before the first paint, so there's
+  no flash.

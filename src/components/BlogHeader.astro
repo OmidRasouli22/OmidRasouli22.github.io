@@ -1,8 +1,10 @@
 ---
+import Emph from './Emph.astro';
 import Icon from './Icon.astro';
 import { tagUrl, type TagInfo } from '@/lib/posts';
 
 interface Props {
+  eyebrow: string;
   title: string;
   description: string;
   tags: TagInfo[];
@@ -10,19 +12,20 @@ interface Props {
   activeTag?: string;
 }
 
-const { title, description, tags, activeTag } = Astro.props;
+const { eyebrow, title, description, tags, activeTag } = Astro.props;
 ---
 
 <header class="max-w-3xl" data-reveal>
-  <h1 class="text-4xl font-semibold tracking-tighter sm:text-5xl">{title}</h1>
+  <p class="eyebrow" data-decode>{eyebrow}</p>
+  <h1 class="mt-4 text-4xl font-semibold tracking-tighter sm:text-6xl"><Emph text={title} /></h1>
   <p class="mt-4 text-lg leading-relaxed text-fg-muted">{description}</p>
 </header>
 
 <div class="mt-8 flex flex-col gap-5" data-reveal style="--i: 1">
-  <button type="button" class="search-trigger" data-search-open aria-label="Search posts">
+  <button type="button" class="search-trigger" data-search-open>
     <Icon name="search" size={17} />
     <span class="flex-1 text-left">Search posts…</span>
-    <kbd class="hidden rounded-md border border-border px-1.5 py-0.5 font-mono text-xs sm:inline">⌘K</kbd>
+    <kbd class="hidden rounded-md border border-border px-1.5 py-0.5 font-mono text-xs sm:inline" aria-hidden="true">⌘K</kbd>
   </button>
   {
     tags.length > 0 && (

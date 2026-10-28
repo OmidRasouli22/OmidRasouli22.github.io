@@ -7,58 +7,73 @@ const path = Astro.url.pathname;
 const isActive = (href: string) => path.startsWith(href.replace(/\/$/, ''));
 ---
 
-<header class="site-header sticky top-0 z-50" transition:name="header" transition:animate="none">
-  <div class="container-page flex h-(--header-h) items-center justify-between gap-2">
-    <a href="/" class="group flex items-center gap-2.5 rounded-full">
-      <span class="logo grid size-8 place-items-center rounded-[0.6rem] font-mono text-[0.8rem] font-semibold" aria-hidden="true">
-        OR
-      </span>
-      <span class="sr-only text-[0.95rem] font-semibold tracking-tight sm:not-sr-only">{SITE.name}</span>
-    </a>
+<header class="site-header sticky top-0 z-50" transition:name="header" transition:animate="none" data-header>
+  <div class="container-page">
+    <div class="bar relative flex h-(--header-h) items-center justify-between gap-2">
+      <span class="pill" aria-hidden="true"></span>
+      <a href="/" class="group flex items-center gap-2.5 rounded-full">
+        <span class="logo grid size-8 place-items-center rounded-[0.6rem] font-mono text-[0.8rem] font-semibold" aria-hidden="true">
+          OR
+        </span>
+        <span class="sr-only text-[0.95rem] font-semibold tracking-tight sm:not-sr-only">{SITE.name}</span>
+      </a>
 
-    <div class="flex items-center gap-1 sm:gap-2">
-      <nav aria-label="Main">
-        <ul class="flex items-center">
-          {
-            NAV.map(({ label, href }) => {
-              const active = isActive(href);
-              return (
-                <li>
-                  <a
-                    href={href}
-                    class:list={[
-                      'relative block rounded-full px-3 py-1.5 text-sm font-medium transition-colors duration-200',
-                      active ? 'text-fg' : 'text-fg-muted hover:text-fg',
-                    ]}
-                    aria-current={active ? 'page' : undefined}
-                  >
-                    {active && (
-                      <span
-                        class="nav-pill absolute inset-0 -z-10 rounded-full"
-                        transition:name="nav-pill"
-                      />
-                    )}
-                    {label}
-                  </a>
-                </li>
-              );
-            })
-          }
-        </ul>
-      </nav>
-      <span class="mx-1 hidden h-5 w-px bg-border sm:block" aria-hidden="true"></span>
-      <Search />
-      <ThemeToggle />
+      <div class="flex items-center gap-1 sm:gap-2">
+        <nav aria-label="Main">
+          <ul class="flex items-center">
+            {
+              NAV.map(({ label, href }) => {
+                const active = isActive(href);
+                return (
+                  <li>
+                    <a
+                      href={href}
+                      class:list={[
+                        'relative block rounded-full px-3 py-1.5 text-sm font-medium transition-colors duration-200',
+                        active ? 'text-fg' : 'text-fg-muted hover:text-fg',
+                      ]}
+                      aria-current={active ? 'page' : undefined}
+                    >
+                      {active && <span class="nav-pill absolute inset-0 -z-10 rounded-full" transition:name="nav-pill" />}
+                      {label}
+                    </a>
+                  </li>
+                );
+              })
+            }
+          </ul>
+        </nav>
+        <span class="mx-1 hidden h-5 w-px bg-border sm:block" aria-hidden="true"></span>
+        <Search />
+        <ThemeToggle />
+      </div>
     </div>
   </div>
 </header>
 
 <style>
-  .site-header {
-    background: oklch(from var(--bg) l c h / 0.72);
-    backdrop-filter: blur(14px) saturate(1.6);
-    -webkit-backdrop-filter: blur(14px) saturate(1.6);
-    border-bottom: 1px solid var(--border);
+  .bar {
+    isolation: isolate;
+  }
+  .pill {
+    position: absolute;
+    inset: 0.5rem -0.75rem;
+    z-index: -1;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: oklch(from var(--bg) l c h / 0.7);
+    backdrop-filter: blur(16px) saturate(1.6);
+    -webkit-backdrop-filter: blur(16px) saturate(1.6);
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+    transition:
+      opacity 350ms var(--ease-out),
+      transform 350ms var(--ease-out);
+  }
+  [data-header][data-scrolled] .pill {
+    opacity: 1;
+    transform: none;
   }
   .logo {
     color: var(--accent-contrast);
@@ -76,3 +91,22 @@ const isActive = (href: string) => path.startsWith(href.replace(/\/$/, ''));
     border: 1px solid var(--border);
   }
 </style>
+
+<script>
+  let ticking = false;
+  function update() {
+    ticking = false;
+    document.querySelector('[data-header]')?.toggleAttribute('data-scrolled', scrollY > 24);
+  }
+  addEventListener(
+    'scroll',
+    () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    },
+    { passive: true },
+  );
+  document.addEventListener('astro:page-load', update);
+</script>

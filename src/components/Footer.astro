@@ -1,30 +1,73 @@
 ---
 import { SITE, SOCIALS } from '@/config';
+import Emph from './Emph.astro';
 import Icon from './Icon.astro';
 
 const year = new Date().getFullYear();
 ---
 
-<footer class="mt-24 border-t border-border">
-  <div class="container-page flex flex-col-reverse items-start justify-between gap-6 py-10 sm:flex-row sm:items-center">
-    <p class="text-sm text-fg-subtle">
-      © {year} {SITE.name}. Built with <a href="https://astro.build" class="link-underline text-fg-muted hover:text-fg">Astro</a>.
-    </p>
-    <ul class="-ml-2.5 flex items-center gap-1 sm:ml-0">
-      {
-        SOCIALS.map(({ label, href, icon }) => (
-          <li>
-            <a href={href} class="icon-btn" aria-label={label} rel="me noopener" target={href.startsWith('http') ? '_blank' : undefined}>
-              <Icon name={icon} />
-            </a>
-          </li>
-        ))
-      }
-      <li>
-        <a href="/rss.xml" class="icon-btn" aria-label="RSS feed">
-          <Icon name="rss" />
-        </a>
-      </li>
-    </ul>
+<footer class="mt-20 border-t border-border">
+  <div class="container-page pt-16 pb-10 sm:pt-20">
+    <div data-reveal>
+      <p class="eyebrow" data-decode>Contact</p>
+      <h2 class="mt-5 max-w-3xl text-4xl leading-[1.05] font-semibold tracking-tighter sm:text-6xl">
+        <Emph text="Have a role or a project in *mind*?" />
+      </h2>
+      <a href={`mailto:${SITE.email}`} class="email group mt-8 inline-flex items-center gap-3 text-lg font-medium sm:text-2xl">
+        <span class="link-underline">{SITE.email}</span>
+        <Icon name="arrow-up-right" size={22} class="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+      </a>
+    </div>
+
+    <div class="mt-16 flex flex-col gap-6 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
+      <p class="font-mono text-xs text-fg-subtle">
+        {SITE.location}
+        <span aria-hidden="true"> · </span>
+        <time data-clock class="inline-block min-w-[9ch]"></time>
+      </p>
+      <ul class="-ml-2.5 flex items-center gap-1 sm:ml-0">
+        {
+          SOCIALS.map(({ label, href, icon }) => (
+            <li>
+              <a href={href} class="icon-btn" aria-label={label} rel="me noopener" target={href.startsWith('http') ? '_blank' : undefined}>
+                <Icon name={icon} />
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <a href="/rss.xml" class="icon-btn" aria-label="RSS feed">
+            <Icon name="rss" />
+          </a>
+        </li>
+      </ul>
+      <p class="font-mono text-xs text-fg-subtle">© {year} {SITE.name}</p>
+    </div>
   </div>
 </footer>
+
+<style>
+  .email {
+    color: var(--fg);
+  }
+  .email:hover {
+    color: var(--accent);
+  }
+</style>
+
+<script>
+  const format = new Intl.DateTimeFormat('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Europe/Berlin',
+    timeZoneName: 'short',
+  });
+
+  function tick() {
+    const clock = document.querySelector<HTMLTimeElement>('[data-clock]');
+    if (clock) clock.textContent = format.format(new Date());
+  }
+
+  document.addEventListener('astro:page-load', tick);
+  setInterval(tick, 30_000);
+</script>

@@ -1,5 +1,5 @@
 /**
- * Site-wide configuration. Change your info here — every page reads from this file.
+ * Personal info, links and theme. Every page reads from here.
  */
 
 export const SITE = {
@@ -10,7 +10,7 @@ export const SITE = {
   title: 'Omid Rasouli',
   /** One-line positioning shown in the hero. */
   tagline: 'AI Engineer building data pipelines and ML systems.',
-  /** Hero headline on the home page. Wrap words in *asterisks* to give them the accent gradient. */
+  /** Hero headline. Words in *asterisks* are set in the italic serif. */
   headline: 'AI Engineer building *data pipelines* and *ML systems*.',
   /** Small line above the headline. */
   eyebrow: 'M.Sc. AI · University of Freiburg',
@@ -18,10 +18,10 @@ export const SITE = {
   availability: 'Open to roles in Germany',
   /** Default meta description for pages that don't set their own. */
   description:
-    'Omid Rasouli — M.Sc. AI student at the University of Freiburg and software engineer writing about machine learning, AutoML and data engineering.',
+    'Personal site and blog of Omid Rasouli, M.Sc. AI student at the University of Freiburg and software engineer. Writing about machine learning, AutoML and data engineering.',
   /** Short intro paragraph under the hero headline. */
   intro:
-    "I'm an M.Sc. Artificial Intelligence student at the University of Freiburg with 4+ years of professional software engineering in Python and TypeScript. I build data pipelines, ML systems and the software around them — and write about what I learn along the way.",
+    "I've worked as a software engineer for over four years, mostly in Python and TypeScript, and I'm now doing an M.Sc. in Artificial Intelligence at the University of Freiburg. I build data pipelines and ML systems, and I write here about what I learn.",
   location: 'Freiburg, Germany',
   email: 'omidrasouli1998@gmail.com',
   /** Put your CV at public/cv.pdf. TODO: add the file. */
@@ -86,8 +86,8 @@ export const SOCIALS: { label: string; href: string; icon: IconName }[] = [
 /** About page content. */
 export const ABOUT = {
   bio: [
-    "I'm Omid, an M.Sc. Artificial Intelligence student at the University of Freiburg. Before and alongside my studies I've spent more than four years working as a software engineer — building products in Python, TypeScript, Node.js and Next.js, including freelance work for clients.",
-    "Today I focus on the intersection of machine learning and data engineering: AutoML and tabular foundation models on the research side, and reliable data pipelines on the engineering side. I'm looking for AI Engineer, Data Engineer, Data Scientist and Backend roles in Germany.",
+    "I'm Omid. I'm doing my M.Sc. in Artificial Intelligence at the University of Freiburg, and I've worked as a software engineer for more than four years, including freelance projects, mostly with Python, TypeScript, Node.js and Next.js.",
+    "These days most of my time goes into machine learning and data engineering: AutoML and tabular foundation models like TabPFN on the research side, and data pipelines that run reliably on the engineering side. I'm looking for AI Engineer, Data Engineer, Data Scientist and Backend roles in Germany.",
   ],
   education: [
     {

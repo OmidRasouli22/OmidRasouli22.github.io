@@ -6,7 +6,7 @@ import { getPosts, postUrl } from '@/lib/posts';
 export const GET: APIRoute = async (context) => {
   const posts = await getPosts();
   return rss({
-    title: `${SITE.title} — Blog`,
+    title: `${SITE.title} · Blog`,
     description: SITE.description,
     site: context.site!,
     items: posts.map((post) => ({

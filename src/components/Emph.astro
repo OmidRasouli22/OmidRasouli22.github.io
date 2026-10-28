@@ -1,0 +1,10 @@
+---
+// Renders "*word*" segments of a heading in the italic display serif.
+interface Props {
+  text: string;
+}
+
+const parts = Astro.props.text.split('*');
+---
+
+{parts.map((part, i) => (i % 2 === 1 ? <em class="serif">{part}</em> : part))}

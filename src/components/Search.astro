@@ -152,7 +152,7 @@ import Icon from './Icon.astro';
     const pf = await loadPagefind();
     if (!pf) {
       status.hidden = false;
-      status.textContent = 'Search is available after `npm run build` — try `npm run preview`.';
+      status.textContent = 'Search needs a production build. Run npm run build, then npm run preview.';
       return;
     }
     const search = await pf.debouncedSearch(query, {}, 150);

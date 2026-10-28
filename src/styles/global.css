@@ -73,6 +73,7 @@
 @theme inline {
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
 
   --color-bg: var(--bg);
   --color-bg-subtle: var(--bg-subtle);
@@ -144,6 +145,17 @@
   @media (width >= 40rem) {
     padding-inline: 2rem;
   }
+}
+
+/* Italic display serif used for the one emphasised word in a heading. */
+@utility serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  font-size: 1.08em;
+  line-height: 1;
+  padding-right: 0.06em;
 }
 
 @utility text-gradient {
@@ -354,6 +366,23 @@
   }
   .js [data-reveal].is-visible {
     opacity: 1;
+    transform: none;
+  }
+}
+
+/* Hairline that draws itself in when its section is revealed. */
+.rule {
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, var(--border-strong), transparent);
+  transform-origin: left;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .js .rule {
+    transform: scaleX(0);
+    transition: transform 900ms var(--ease-out) 150ms;
+  }
+  .js .is-visible .rule {
     transform: none;
   }
 }
