@@ -46,8 +46,10 @@ export interface SemanticIndex {
   model: { id: string; revision: string; dims: number };
   /** Vector file, relative to the index file. */
   vectors: string;
-  /** Bytes the browser downloads on first use (model + runtime), shown before asking. */
+  /** Bytes the browser loads on first use (model + runtime), uncompressed. Drives the progress bar. */
   downloadBytes: number;
+  /** The same, gzip-compressed: roughly what goes over the network. Shown before asking. */
+  transferBytes: number;
   pages: SemanticPage[];
   passages: SemanticPassage[];
 }

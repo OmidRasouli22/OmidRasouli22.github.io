@@ -11,6 +11,7 @@
  * the site still deploys and the search UI falls back to keyword search.
  */
 import { createHash } from 'node:crypto';
+import { gzipSync } from 'node:zlib';
 import { copyFile, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -87,26 +88,36 @@ async function embedAll(inputs: string[]) {
   return { vectors, scales };
 }
 
-/** Copies the model into dist/ and returns what the browser downloads on first use, in bytes. */
-async function copyModel(): Promise<number> {
-  let bytes = 0;
+/**
+ * Copies the model into dist/. Returns what the browser loads on first use: the raw size (for the
+ * progress bar, which counts decompressed bytes) and the gzip size (what actually goes over the
+ * wire, since GitHub Pages compresses these files; shown to the visitor before they opt in).
+ */
+async function copyModel(): Promise<{ downloadBytes: number; transferBytes: number }> {
+  const sources: string[] = [];
   for (const file of model.files) {
     const to = join(DIST, SEMANTIC.paths.models, model.id, file);
     await mkdir(dirname(to), { recursive: true });
     await copyFile(join(CACHE, model.id, model.revision, file), to);
-    bytes += (await stat(to)).size;
+    sources.push(to);
   }
-  for (const file of SEMANTIC.runtime) {
-    bytes += (await stat(fileURLToPath(import.meta.resolve(`onnxruntime-web/${file}`)))).size;
+  for (const file of SEMANTIC.runtime) sources.push(fileURLToPath(import.meta.resolve(`onnxruntime-web/${file}`)));
+
+  let downloadBytes = 0;
+  let transferBytes = 0;
+  for (const source of sources) {
+    const data = await readFile(source);
+    downloadBytes += data.length;
+    transferBytes += gzipSync(data).length;
   }
-  return bytes;
+  return { downloadBytes, transferBytes };
 }
 
 async function main() {
   const started = performance.now();
   const { pages, passages, inputs } = await collect();
   const { vectors, scales } = await embedAll(inputs);
-  const downloadBytes = await copyModel();
+  const { downloadBytes, transferBytes } = await copyModel();
 
   const bytes = new Uint8Array(vectors.buffer);
   const hash = createHash('sha256').update(bytes).digest('hex').slice(0, 10);
@@ -116,6 +127,7 @@ async function main() {
     model: { id: model.id, revision: model.revision, dims: model.dims },
     vectors: vectorFile,
     downloadBytes,
+    transferBytes,
     pages,
     passages: passages.map((p, i) => ({ ...p, scale: Number(scales[i]!.toPrecision(6)) })),
   };

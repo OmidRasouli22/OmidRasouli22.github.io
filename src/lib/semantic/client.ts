@@ -19,14 +19,14 @@ class SemanticSearch {
   private ready: Promise<void> | undefined;
   private nextId = 0;
   private pending = new Map<number, (response: SemanticResponse) => void>();
-  private info: Promise<{ available: boolean; downloadBytes: number }> | undefined;
+  private info: Promise<{ available: boolean; transferBytes: number }> | undefined;
 
   /** Cheap check (the small index file only): is semantic search in this build, and how big is it? */
   availability() {
     this.info ??= fetch(SEMANTIC.paths.index)
-      .then(async (r) => (r.ok ? { available: true, downloadBytes: ((await r.json()) as SemanticIndex).downloadBytes } : null))
+      .then(async (r) => (r.ok ? { available: true, transferBytes: ((await r.json()) as SemanticIndex).transferBytes } : null))
       .catch(() => null)
-      .then((info) => info ?? { available: false, downloadBytes: 0 });
+      .then((info) => info ?? { available: false, transferBytes: 0 });
     return this.info;
   }
 

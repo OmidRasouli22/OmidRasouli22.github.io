@@ -345,13 +345,13 @@ import Icon from './Icon.astro';
   }
 
   async function showConsent() {
-    const { downloadBytes } = await semantic.availability();
+    const { transferBytes } = await semantic.availability();
     const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
     showPanel(`
       <h3>Search by meaning</h3>
       <p>Finds posts and projects by what they are about, even when they don't use your words.
       It runs a small language model (snowflake-arctic-embed-xs) right here in your browser, so your searches never leave this device.</p>
-      <p>One-time download: <strong>${megabytes(downloadBytes)}</strong>. After that it loads from your browser's cache.${
+      <p>One-time download of about <strong>${megabytes(transferBytes)}</strong>. After that it loads from your browser's cache.${
         saveData ? ' You have data saver turned on.' : ''
       }</p>
       <div class="actions">
@@ -367,7 +367,7 @@ import Icon from './Icon.astro';
     const bar = panel.querySelector<HTMLElement>('.progress span');
     if (bar) {
       bar.style.setProperty('--p', String(share));
-      panel.querySelector('[data-progress-text]')!.textContent = total ? `${megabytes(loaded)} of ${megabytes(total)}` : 'Starting…';
+      panel.querySelector('[data-progress-text]')!.textContent = total ? `${Math.floor(share * 100)}%` : 'Starting…';
       return;
     }
     showPanel(`
