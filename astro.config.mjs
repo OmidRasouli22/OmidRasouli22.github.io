@@ -43,5 +43,15 @@ export default defineConfig({
   },
   vite: {
     plugins: [tailwindcss()],
+    resolve: {
+      alias: {
+        // transformers.js imports the WebGPU build of ONNX Runtime (28 MB of WASM). Semantic search
+        // only needs the plain WASM build (14 MB), so swap it in.
+        'onnxruntime-web/webgpu': 'onnxruntime-web/wasm',
+      },
+    },
+    worker: {
+      format: 'es',
+    },
   },
 });

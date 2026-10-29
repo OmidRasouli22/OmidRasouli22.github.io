@@ -20,7 +20,7 @@ const { Content } = await render(project);
 ---
 
 <BaseLayout title={title} description={description} image={`/og/projects/${project.id}.png`} imageAlt={title}>
-  <article class="container-page pt-12 sm:pt-16">
+  <article class="container-page pt-12 sm:pt-16" data-pagefind-body data-pagefind-meta="type:Project">
     <header class="max-w-3xl">
       <a href="/projects/" class="group mb-8 inline-flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg">
         <Icon name="arrow-left" size={16} class="transition-transform duration-300 group-hover:-translate-x-0.5" />
@@ -75,7 +75,7 @@ const { Content } = await render(project);
       }
     </div>
 
-    <div class="article prose mt-12 max-w-3xl">
+    <div class="article prose mt-12 max-w-3xl" data-search-type="Project" data-search-title={title} data-search-description={description}>
       <Content components={{ Callout }} />
     </div>
   </article>

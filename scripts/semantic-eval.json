@@ -1,0 +1,27 @@
+{
+  "relevant": [
+    { "query": "how do I write a formula in a post", "expect": "/blog/example-post-features/" },
+    { "query": "make a warning box in an article", "expect": "/blog/example-post-features/" },
+    { "query": "syntax highlighting with a copy button", "expect": "/blog/example-post-features/" },
+    { "query": "add a caption under a picture", "expect": "/blog/example-post-features/" },
+    { "query": "numerically stable softmax", "expect": "/blog/example-post-features/" },
+    { "query": "why are trains late in Germany", "expect": "/projects/deutsche-bahn-punctuality-observatory/" },
+    { "query": "railway punctuality data", "expect": "/projects/deutsche-bahn-punctuality-observatory/" },
+    { "query": "which skills are employers asking for", "expect": "/projects/german-job-market-radar/" },
+    { "query": "vacancy data pipeline on Databricks", "expect": "/projects/german-job-market-radar/" },
+    { "query": "predicting electricity prices", "expect": "/projects/german-energy-market-forecasting/" },
+    { "query": "football statistics assistant", "expect": "/projects/bundesliga-analytics-ai-assistant/" },
+    { "query": "ask questions in plain English and get SQL", "expect": "/projects/bundesliga-analytics-ai-assistant/" },
+    { "query": "automated machine learning for tabular data", "expect": "/projects/auto-tabpfn/" },
+    { "query": "in which order should a model see training tasks", "expect": "/projects/nanotabpfn-curriculum-pretraining/" },
+    { "query": "research at the Deep Learning Lab", "expect": "/projects/nanotabpfn-curriculum-pretraining/" }
+  ],
+  "offTopic": [
+    "best pizza in Freiburg",
+    "how to bake sourdough bread",
+    "cheap car insurance",
+    "knitting patterns for beginners",
+    "weather forecast for tomorrow",
+    "learn to play the guitar"
+  ]
+}

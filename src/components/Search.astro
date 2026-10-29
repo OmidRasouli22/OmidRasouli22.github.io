@@ -6,17 +6,17 @@ import Icon from './Icon.astro';
   <Icon name="search" />
 </button>
 
-<dialog class="search-dialog" data-search-dialog aria-label="Search posts">
+<dialog class="search-dialog" data-search-dialog aria-label="Search">
   <div class="search-panel">
     <div class="flex items-center gap-3 border-b border-border px-4">
       <Icon name="search" class="shrink-0 text-fg-subtle" />
       <input
         type="search"
         class="h-14 w-full bg-transparent text-base outline-none placeholder:text-fg-subtle"
-        placeholder="Search posts…"
+        placeholder="Search posts and projects…"
         autocomplete="off"
         spellcheck="false"
-        aria-label="Search posts"
+        aria-label="Search posts and projects"
         aria-controls="search-results"
         data-search-input
       />
@@ -24,21 +24,32 @@ import Icon from './Icon.astro';
         <Icon name="x" />
       </button>
     </div>
-    <div class="max-h-[60vh] overflow-y-auto overscroll-contain p-2">
-      <p class="px-3 py-8 text-center text-sm text-fg-subtle" data-search-status>Type to search all posts.</p>
-      <ul id="search-results" role="listbox" class="space-y-1" data-search-results></ul>
+
+    <div class="toolbar flex items-center justify-between gap-3 border-b border-border px-4 py-2">
+      <div class="modes" role="group" aria-label="Search mode">
+        <button type="button" data-mode="keyword" aria-pressed="true">Keyword</button>
+        <button type="button" data-mode="meaning" aria-pressed="false">Meaning</button>
+      </div>
+      <p class="truncate font-mono text-[0.6875rem] text-fg-subtle" data-search-meta></p>
     </div>
-    <div class="hidden items-center gap-4 border-t border-border px-4 py-2.5 font-mono text-[0.6875rem] text-fg-subtle sm:flex">
-      <span><kbd>↑</kbd> <kbd>↓</kbd> navigate</span>
-      <span><kbd>↵</kbd> open</span>
-      <span><kbd>esc</kbd> close</span>
+
+    <div class="max-h-[60vh] overflow-y-auto overscroll-contain p-2" data-search-body>
+      <div class="semantic-panel" data-semantic-panel hidden></div>
+      <div class="px-3 py-8 text-center text-sm text-fg-subtle" data-search-status>Type to search.</div>
+      <ul id="search-results" role="listbox" aria-label="Results" class="space-y-1" data-search-results></ul>
     </div>
+
+    <div class="hidden items-center justify-between gap-4 border-t border-border px-4 py-2.5 font-mono text-[0.6875rem] text-fg-subtle sm:flex">
+      <span><kbd>↑</kbd> <kbd>↓</kbd> navigate · <kbd>↵</kbd> open · <kbd>esc</kbd> close</span>
+      <span data-search-footnote>exact words, instant</span>
+    </div>
+    <p class="sr-only" aria-live="polite" data-search-announce></p>
   </div>
 </dialog>
 
 <style>
   .search-dialog {
-    width: min(40rem, calc(100% - 2rem));
+    width: min(42rem, calc(100% - 2rem));
     max-width: none;
     margin: 12vh auto auto;
     padding: 0;
@@ -83,24 +94,151 @@ import Icon from './Icon.astro';
     border: 1px solid var(--border);
     border-radius: 0.25rem;
   }
+
+  .modes {
+    display: inline-flex;
+    flex-shrink: 0;
+    padding: 2px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+  }
+  .modes button {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    color: var(--fg-subtle);
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition:
+      color 150ms var(--ease-out),
+      background-color 150ms var(--ease-out);
+  }
+  .modes button:hover:not([aria-pressed='true']):not(:disabled) {
+    color: var(--fg);
+  }
+  .modes button[aria-pressed='true'] {
+    background: var(--accent-soft);
+    color: var(--accent);
+    box-shadow: inset 0 0 0 1px oklch(from var(--accent) l c h / 0.35);
+  }
+  .modes button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .semantic-panel {
+    padding: 1.25rem 1rem;
+  }
+  .semantic-panel :global(h3) {
+    font-weight: 600;
+  }
+  .semantic-panel :global(p) {
+    margin-top: 0.4rem;
+    color: var(--fg-muted);
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+  .semantic-panel :global(.actions) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .semantic-panel :global(.actions button) {
+    height: 2.25rem;
+    padding-inline: 0.9rem;
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+  .semantic-panel :global(.primary) {
+    background: var(--fg);
+    color: var(--bg);
+  }
+  .semantic-panel :global(.secondary) {
+    border: 1px solid var(--border-strong);
+    color: var(--fg);
+  }
+  .semantic-panel :global(.progress) {
+    height: 4px;
+    margin-top: 1rem;
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--border);
+  }
+  .semantic-panel :global(.progress span) {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transform-origin: left;
+    transform: scaleX(var(--p, 0));
+    transition: transform 200ms linear;
+  }
+
   :global(.search-result) {
     display: block;
     padding: 0.75rem 0.875rem;
     border-radius: 0.625rem;
     transition: background-color 120ms var(--ease-out);
   }
-  :global([aria-selected='true'] > .search-result) {
+  :global([aria-selected='true'] > .search-result),
+  :global(.search-result:hover) {
     background: var(--accent-soft);
   }
   :global(.search-result mark) {
-    background: none;
+    background: oklch(from var(--accent) l c h / 0.16);
+    color: var(--fg);
+    border-radius: 3px;
+    padding-inline: 1px;
+  }
+  :global(.search-weak > li[role='option']) {
+    opacity: 0.6;
+  }
+  :global(.result-type) {
+    flex-shrink: 0;
+    padding: 0.05rem 0.45rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--fg-muted);
+  }
+  :global(.result-match) {
+    flex-shrink: 0;
+    width: 3rem;
+    height: 3px;
+    margin-left: auto;
+    overflow: hidden;
+    border-radius: 3px;
+    background: var(--border-strong);
+  }
+  :global(.result-match span) {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transform-origin: left;
+    transform: scaleX(var(--m));
+  }
+  :global(.result-notice) {
+    padding: 0.5rem 0.875rem 0.25rem;
+    color: var(--fg-subtle);
+    font-size: 0.8125rem;
+  }
+  :global(.switch-mode) {
+    margin-top: 0.75rem;
     color: var(--accent);
-    font-weight: 600;
+    font-weight: 500;
+  }
+  :global(.switch-mode:hover) {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
   }
 </style>
 
 <script>
-  type PagefindResult = { url: string; excerpt: string; meta: { title?: string; date?: string } };
+  import { highlight, megabytes, semantic, type SemanticResponse } from '@/lib/semantic/client';
+
+  type Mode = 'keyword' | 'meaning';
+  type PagefindResult = { url: string; excerpt: string; meta: { title?: string; date?: string; type?: string } };
   type Pagefind = {
     init: () => Promise<void>;
     debouncedSearch: (
@@ -109,6 +247,44 @@ import Icon from './Icon.astro';
       ms?: number,
     ) => Promise<{ results: { data: () => Promise<PagefindResult> }[] } | null>;
   };
+
+  const MODE_KEY = 'search-mode';
+  const CONSENT_KEY = 'semantic-search';
+  const storage = {
+    get: (key: string) => {
+      try {
+        return localStorage.getItem(key);
+      } catch {
+        return null;
+      }
+    },
+    set: (key: string, value: string) => {
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        /* private mode */
+      }
+    },
+  };
+
+  let mode: Mode = storage.get(MODE_KEY) === 'meaning' ? 'meaning' : 'keyword';
+  let selected = -1;
+  let debounce = 0;
+
+  const $ = <T extends Element>(selector: string) => document.querySelector<T>(selector);
+  const escapeHtml = (s: string) =>
+    s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+  const query = () => $<HTMLInputElement>('[data-search-input]')?.value.trim() ?? '';
+  const announce = (text: string) => {
+    const el = $('[data-search-announce]');
+    if (el) el.textContent = text;
+  };
+  const setMeta = (text: string) => {
+    const el = $('[data-search-meta]');
+    if (el) el.textContent = text;
+  };
+
+  // ---- Keyword search (Pagefind) -------------------------------------------------------------
 
   let pagefind: Promise<Pagefind | null> | undefined;
   function loadPagefind() {
@@ -123,14 +299,177 @@ import Icon from './Icon.astro';
     return pagefind;
   }
 
-  const $ = <T extends Element>(selector: string) => document.querySelector<T>(selector);
-  const escapeHtml = (s: string) =>
-    s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+  async function keywordSearch(q: string) {
+    const pf = await loadPagefind();
+    if (!pf) return showStatus('Search needs a production build. Run npm run build, then npm run preview.');
+    const search = await pf.debouncedSearch(q, {}, 150);
+    if (search === null || mode !== 'keyword' || q !== query()) return; // superseded
+    const results = await Promise.all(search.results.slice(0, 8).map((r) => r.data()));
+    if (!results.length) {
+      const { available } = await semantic.availability();
+      showStatus(
+        `No results for “${escapeHtml(q)}”.` +
+          (available ? `<br /><button type="button" class="switch-mode" data-switch-mode>Search by meaning instead</button>` : ''),
+        true,
+      );
+      setMeta('');
+      announce('No results');
+      return;
+    }
+    renderResults(
+      results.map(
+        (r) => `<a href="${escapeHtml(r.url)}" class="search-result" tabindex="-1">
+          <span class="flex items-center gap-2">
+            <span class="font-medium">${escapeHtml(r.meta.title ?? r.url)}</span>
+            ${r.meta.type ? `<span class="result-type">${escapeHtml(r.meta.type)}</span>` : ''}
+          </span>
+          ${r.meta.date ? `<span class="mt-0.5 block font-mono text-xs text-fg-subtle">${escapeHtml(r.meta.date)}</span>` : ''}
+          <span class="mt-1 line-clamp-2 text-sm text-fg-muted">${r.excerpt}</span>
+        </a>`,
+      ),
+    );
+    setMeta(`${results.length} result${results.length === 1 ? '' : 's'}`);
+    announce(`${results.length} results`);
+  }
 
-  let selected = -1;
+  // ---- Meaning search (embeddings in a worker) ----------------------------------------------
+
+  function showPanel(html: string | null) {
+    const panel = $<HTMLElement>('[data-semantic-panel]')!;
+    panel.hidden = html === null;
+    panel.innerHTML = html ?? '';
+    if (html !== null) {
+      showStatus(null);
+      renderResults([]);
+    }
+  }
+
+  async function showConsent() {
+    const { downloadBytes } = await semantic.availability();
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    showPanel(`
+      <h3>Search by meaning</h3>
+      <p>Finds posts and projects by what they are about, even when they don't use your words.
+      It runs a small language model (snowflake-arctic-embed-xs) right here in your browser, so your searches never leave this device.</p>
+      <p>One-time download: <strong>${megabytes(downloadBytes)}</strong>. After that it loads from your browser's cache.${
+        saveData ? ' You have data saver turned on.' : ''
+      }</p>
+      <div class="actions">
+        <button type="button" class="primary" data-semantic-enable>Download and turn on</button>
+        <button type="button" class="secondary" data-mode-set="keyword">Keep keyword search</button>
+      </div>`);
+    setMeta('');
+  }
+
+  function showLoading(loaded = 0, total = 0) {
+    const share = total ? loaded / total : 0;
+    const panel = $<HTMLElement>('[data-semantic-panel]')!;
+    const bar = panel.querySelector<HTMLElement>('.progress span');
+    if (bar) {
+      bar.style.setProperty('--p', String(share));
+      panel.querySelector('[data-progress-text]')!.textContent = total ? `${megabytes(loaded)} of ${megabytes(total)}` : 'Starting…';
+      return;
+    }
+    showPanel(`
+      <h3>Loading the model…</h3>
+      <p data-progress-text>Starting…</p>
+      <div class="progress" role="progressbar" aria-label="Model download"><span style="--p: ${share}"></span></div>`);
+    setMeta('loading model');
+  }
+
+  function showFailure() {
+    showPanel(`
+      <h3>Couldn't start search by meaning</h3>
+      <p>${escapeHtml(semantic.error || 'Something went wrong.')} Keyword search still works.</p>
+      <div class="actions">
+        <button type="button" class="primary" data-semantic-enable>Try again</button>
+        <button type="button" class="secondary" data-mode-set="keyword">Use keyword search</button>
+      </div>`);
+    setMeta('');
+  }
+
+  async function startSemantic() {
+    storage.set(CONSENT_KEY, 'on');
+    showLoading();
+    announce('Loading the search model');
+    semantic.onProgress = (loaded, total) => {
+      if (mode === 'meaning') showLoading(loaded, total);
+    };
+    try {
+      await semantic.load();
+    } catch {
+      if (mode === 'meaning') showFailure();
+      announce('Search by meaning could not be loaded');
+      return;
+    }
+    if (mode !== 'meaning') return;
+    showPanel(null);
+    announce('Search by meaning is ready');
+    run();
+  }
+
+  function renderSemantic(q: string, response: SemanticResponse) {
+    const { results, confident, ms } = response;
+    if (!results.length) return showStatus(`No results for “${escapeHtml(q)}”.`);
+    renderResults(
+      results.map((r) => {
+        const [best, second] = r.passages;
+        const anchor = best?.anchor ? `#${encodeURIComponent(best.anchor)}` : '';
+        // Bar length follows how far the hit stands out from the rest of the site (z-score).
+        const strength = Math.min(1, Math.max(0.08, (r.z - 1) / 2.5));
+        return `<a href="${escapeHtml(r.url + anchor)}" class="search-result" tabindex="-1">
+          <span class="flex items-center gap-2">
+            <span class="min-w-0 truncate font-medium">${escapeHtml(r.title)}</span>
+            <span class="result-type">${r.type}</span>
+            <span class="result-match" title="cosine similarity ${r.score.toFixed(2)}"><span style="--m: ${strength.toFixed(2)}"></span></span>
+          </span>
+          ${best?.heading ? `<span class="mt-1 block font-mono text-xs text-fg-subtle">§ ${escapeHtml(best.heading)}</span>` : ''}
+          ${best ? `<span class="mt-1 line-clamp-2 text-sm text-fg-muted">${highlight(best.text, q)}</span>` : ''}
+          ${
+            second && second.heading && second.heading !== best?.heading
+              ? `<span class="mt-1 block truncate font-mono text-xs text-fg-subtle">also: § ${escapeHtml(second.heading)}</span>`
+              : ''
+          }
+        </a>`;
+      }),
+      confident ? '' : 'No close matches. These are the closest:',
+    );
+    setMeta(`${results.length} by meaning · ${ms} ms`);
+    announce(confident ? `${results.length} results` : `No close matches, showing ${results.length} closest results`);
+  }
+
+  async function semanticSearch(q: string) {
+    if (semantic.status !== 'ready') return; // results will run once loading finishes
+    const response = await semantic.search(q).catch(() => null);
+    if (!response || mode !== 'meaning' || q !== query()) return;
+    renderSemantic(q, response);
+  }
+
+  // ---- Shared rendering ---------------------------------------------------------------------
+
+  function showStatus(html: string | null, trusted = false) {
+    const status = $<HTMLElement>('[data-search-status]')!;
+    status.hidden = html === null;
+    if (html !== null) {
+      if (trusted) status.innerHTML = html;
+      else status.textContent = html;
+      renderResults([]);
+    }
+  }
+
+  function renderResults(items: string[], notice = '') {
+    const list = $<HTMLUListElement>('[data-search-results]')!;
+    selected = -1;
+    $('[data-search-input]')?.removeAttribute('aria-activedescendant');
+    if (items.length) showStatus(null);
+    list.classList.toggle('search-weak', Boolean(notice));
+    list.innerHTML =
+      (notice ? `<li class="result-notice" role="presentation">${escapeHtml(notice)}</li>` : '') +
+      items.map((html, i) => `<li role="option" id="search-option-${i}" aria-selected="false">${html}</li>`).join('');
+  }
 
   function select(index: number) {
-    const items = [...document.querySelectorAll<HTMLElement>('[data-search-results] > li')];
+    const items = [...document.querySelectorAll<HTMLElement>('[data-search-results] > li[role="option"]')];
     if (!items.length) return;
     selected = (index + items.length) % items.length;
     items.forEach((item, i) => item.setAttribute('aria-selected', String(i === selected)));
@@ -138,48 +477,56 @@ import Icon from './Icon.astro';
     items[selected]!.scrollIntoView({ block: 'nearest' });
   }
 
-  async function runSearch(query: string) {
-    const status = $<HTMLElement>('[data-search-status]')!;
-    const list = $<HTMLUListElement>('[data-search-results]')!;
-    selected = -1;
-    $('[data-search-input]')?.removeAttribute('aria-activedescendant');
-    if (!query.trim()) {
-      list.innerHTML = '';
-      status.hidden = false;
-      status.textContent = 'Type to search all posts.';
+  function run() {
+    const q = query();
+    clearTimeout(debounce);
+    if (mode === 'meaning' && semantic.status !== 'ready') return;
+    if (!q) {
+      showStatus(mode === 'meaning' ? 'Ask in your own words, e.g. “how do models learn from small tables?”' : 'Type to search.');
+      setMeta(mode === 'meaning' && semantic.status === 'ready' ? 'model ready · runs in your browser' : '');
       return;
     }
-    const pf = await loadPagefind();
-    if (!pf) {
-      status.hidden = false;
-      status.textContent = 'Search needs a production build. Run npm run build, then npm run preview.';
-      return;
-    }
-    const search = await pf.debouncedSearch(query, {}, 150);
-    if (search === null) return; // superseded by a newer query
-    const results = await Promise.all(search.results.slice(0, 8).map((r) => r.data()));
-    status.hidden = results.length > 0;
-    status.textContent = results.length ? '' : `No results for “${query}”.`;
-    list.innerHTML = results
-      .map(
-        (r, i) => `<li role="option" id="search-option-${i}" aria-selected="false">
-          <a href="${escapeHtml(r.url)}" class="search-result" tabindex="-1">
-            <span class="block font-medium">${escapeHtml(r.meta.title ?? r.url)}</span>
-            ${r.meta.date ? `<span class="mt-0.5 block font-mono text-xs text-fg-subtle">${escapeHtml(r.meta.date)}</span>` : ''}
-            <span class="mt-1 line-clamp-2 block text-sm text-fg-muted">${r.excerpt}</span>
-          </a>
-        </li>`,
-      )
-      .join('');
+    if (mode === 'keyword') keywordSearch(q);
+    else debounce = window.setTimeout(() => semanticSearch(q), 120);
   }
 
-  function open() {
+  async function setMode(next: Mode) {
+    mode = next;
+    storage.set(MODE_KEY, next);
+    document.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === next)));
+    const footnote = $('[data-search-footnote]');
+    if (footnote) footnote.textContent = next === 'meaning' ? 'by meaning · runs in your browser' : 'exact words, instant';
+    $<HTMLInputElement>('[data-search-input]')?.focus();
+
+    if (next === 'keyword') {
+      showPanel(null);
+      return run();
+    }
+    const { available } = await semantic.availability();
+    if (!available) return setMode('keyword');
+    if (semantic.status === 'ready') {
+      showPanel(null);
+      return run();
+    }
+    if (semantic.status === 'loading') return showLoading();
+    if (storage.get(CONSENT_KEY) === 'on' && semantic.status === 'idle') return startSemantic();
+    if (semantic.status === 'failed') return showFailure();
+    return showConsent();
+  }
+
+  async function open() {
     const dialog = $<HTMLDialogElement>('[data-search-dialog]');
     if (!dialog || dialog.open) return;
     dialog.showModal();
-    const input = $<HTMLInputElement>('[data-search-input]')!;
-    input.select();
+    $<HTMLInputElement>('[data-search-input]')!.select();
     loadPagefind();
+    const { available } = await semantic.availability();
+    const meaning = $<HTMLButtonElement>('[data-mode="meaning"]');
+    if (meaning) {
+      meaning.disabled = !available;
+      meaning.title = available ? 'Find results by meaning, not exact words' : 'Not available in this build';
+    }
+    await setMode(available ? mode : 'keyword');
   }
 
   function close() {
@@ -188,14 +535,18 @@ import Icon from './Icon.astro';
 
   document.addEventListener('click', (event) => {
     const target = event.target as Element;
-    if (target.closest('[data-search-open]')) open();
+    const modeButton = target.closest<HTMLElement>('[data-mode]');
+    if (modeButton && !(modeButton as HTMLButtonElement).disabled) setMode(modeButton.dataset.mode as Mode);
+    else if (target.closest('[data-mode-set]')) setMode(target.closest<HTMLElement>('[data-mode-set]')!.dataset.modeSet as Mode);
+    else if (target.closest('[data-switch-mode]')) setMode('meaning');
+    else if (target.closest('[data-semantic-enable]')) startSemantic();
+    else if (target.closest('[data-search-open]')) open();
     else if (target.closest('[data-search-close]') || target.closest('.search-result')) close();
     else if (target.matches('[data-search-dialog]')) close(); // click on backdrop
   });
 
   document.addEventListener('input', (event) => {
-    const input = event.target as HTMLInputElement;
-    if (input.matches('[data-search-input]')) runSearch(input.value);
+    if ((event.target as HTMLElement).matches('[data-search-input]')) run();
   });
 
   document.addEventListener('keydown', (event) => {

@@ -11,12 +11,14 @@ Requires Node.js 22.12+ (CI uses Node 24).
 ```bash
 npm install
 npm run dev        # http://localhost:4321 (drafts are visible here)
-npm run build      # type-check, build to dist/, build the search index
+npm run build      # type-check, build to dist/, build both search indexes
 npm run preview    # serve dist/ locally (use this to try search)
+npm run search:eval  # after a build: check how well search-by-meaning ranks
 ```
 
-> Search is powered by [Pagefind](https://pagefind.app), which indexes the **built** site. In `npm run dev` the
-> search dialog tells you to build first; use `npm run build && npm run preview` to test it.
+> Both search modes index the **built** site, so in `npm run dev` the search dialog tells you to build first.
+> Use `npm run build && npm run preview` to test search. The first build downloads the embedding model
+> (~23 MB) into `.cache/models`.
 
 In Astro 7, `astro dev` runs in the background. Stop it with `npx astro dev stop`.
 
@@ -82,6 +84,38 @@ period: 2025 – 2026        # optional
 Write the case study here. Everything that works in blog posts works here too.
 ```
 
+## Search
+
+Press <kbd>⌘K</kbd> / <kbd>Ctrl K</kbd> or use the search box on the blog. There are two modes:
+
+- **Keyword** ([Pagefind](https://pagefind.app)): exact words, instant, nothing extra to download.
+- **Meaning**: finds posts and projects by what they are about, even when they share no words with the
+  query ("why are trains late in Germany" finds the Deutsche Bahn project). Visitors opt in once; the model then
+  loads from their browser cache.
+
+How search by meaning works:
+
+1. **Build** (`scripts/semantic-index.ts`, runs after `astro build`): every rendered post and project is split into
+   passages along its headings (`src/lib/semantic/chunk.ts`). Code blocks are skipped and math is kept as TeX.
+   Each passage is embedded with [snowflake-arctic-embed-xs](https://huggingface.co/Snowflake/snowflake-arctic-embed-xs)
+   (Apache-2.0, pinned revision) and stored as int8 in `dist/search/`. The model is copied into `dist/models/`.
+2. **Browser** (`src/lib/semantic/worker.ts`): a Web Worker runs the same model with ONNX Runtime (WASM),
+   embeds the query and ranks passages by cosine similarity (`src/lib/semantic/rank.ts`). Results link to the
+   matching section. A query takes ~10–20 ms.
+3. **Privacy:** model, runtime and index are served from this site. The browser makes no requests to
+   Hugging Face or any CDN, and queries never leave the device.
+
+Which pages are indexed is controlled by the `data-search-*` attributes on the content element in
+`src/layouts/PostLayout.astro` and `src/pages/projects/[slug].astro`.
+
+**Tuning.** `scripts/semantic-eval.json` holds test queries with the page each should find, plus off-topic
+queries. `npm run search:eval` reports top-1 accuracy, MRR, and whether the "match / no close match" rule in
+`CONFIDENCE` (`src/lib/semantic/rank.ts`) classifies them correctly. Add queries for your real posts as you
+write them, and re-run it if you change the model.
+
+**If the model can't be downloaded during a build**, the build still succeeds with a warning and the site ships
+with keyword search only; the Meaning button shows as unavailable.
+
 ## About page and hero extras
 
 - **Photo:** put an image at `src/assets/about/photo.jpg` (or `.png` / `.webp`). It shows up on the About page
@@ -143,7 +177,8 @@ The favicon is `public/favicon.svg`. Its gradient colours are hard-coded, so upd
 
 Every push to `main` triggers `.github/workflows/deploy.yml`:
 
-1. `withastro/action` installs dependencies and runs `npm run build` (type check → Astro build → Pagefind index).
+1. `withastro/action` installs dependencies and runs `npm run build` (type check → Astro build → Pagefind index →
+   semantic index). The embedding model is cached between runs (`actions/cache`).
 2. `actions/deploy-pages` publishes `dist/` to GitHub Pages.
 
 **One-time setup:** in the GitHub repo go to **Settings → Pages → Build and deployment → Source** and choose
@@ -165,10 +200,12 @@ src/
   layouts/                  ← BaseLayout (SEO, theme, transitions), PostLayout
   lib/posts.ts              ← draft filtering, reading time, tags, related posts
   lib/og.ts                 ← Open Graph image renderer (Satori)
+  lib/semantic/             ← search by meaning: shared config, chunking, ranking, browser worker
   pages/                    ← routes: /, /blog, /blog/[slug], /projects, /about, /tags, rss.xml, robots.txt, og/*.png
   plugins/                  ← small remark/rehype plugins (math flag, heading anchors, task-list labels)
   styles/global.css         ← design tokens, base styles, article typography
 public/                     ← copied as-is (favicon, cv.pdf)
+scripts/                    ← semantic search indexer and its evaluation
 ```
 
 ## Design notes

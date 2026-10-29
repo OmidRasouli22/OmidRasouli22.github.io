@@ -37,6 +37,10 @@ export function readingTime(body = ''): number {
   return Math.max(1, Math.round(words / 220));
 }
 
+/** "28 Oct 2026": no comma, so it is safe inside Pagefind's comma-separated meta attribute. */
+export const metaDate = (date: Date) =>
+  date.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+
 export function formatDate(date: Date, style: 'short' | 'long' = 'short'): string {
   return date.toLocaleDateString('en-US', {
     year: 'numeric',

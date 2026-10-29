@@ -7,7 +7,7 @@ import Icon from '@/components/Icon.astro';
 import PostList from '@/components/PostList.astro';
 import TableOfContents from '@/components/TableOfContents.astro';
 import { SITE } from '@/config';
-import { formatDate, postUrl, readingTime, tagUrl, type Post } from '@/lib/posts';
+import { formatDate, metaDate, postUrl, readingTime, tagUrl, type Post } from '@/lib/posts';
 
 interface Props {
   post: Post;
@@ -53,7 +53,7 @@ const articleLd = {
 
   <div class="progress" aria-hidden="true"><div class="progress-bar" data-progress></div></div>
 
-  <article class="container-page pt-12 sm:pt-16" data-pagefind-body data-pagefind-meta={`date:${formatDate(pubDate)}`}>
+  <article class="container-page pt-12 sm:pt-16" data-pagefind-body data-pagefind-meta={`date:${metaDate(pubDate)}, type:Post`}>
     <header class="max-w-3xl">
       <a href="/blog/" class="group mb-8 inline-flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg" data-pagefind-ignore>
         <Icon name="arrow-left" size={16} class="transition-transform duration-300 group-hover:-translate-x-0.5" />
@@ -111,7 +111,7 @@ const articleLd = {
           <TableOfContents headings={headings} />
         </div>
       </aside>
-      <div class="article prose min-w-0 lg:order-1">
+      <div class="article prose min-w-0 lg:order-1" data-search-type="Post" data-search-title={title} data-search-description={description} data-search-date={metaDate(pubDate)}>
         <slot />
       </div>
     </div>
