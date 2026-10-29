@@ -1,29 +1,42 @@
 ---
-import { Image } from 'astro:assets';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import EducationPath from '@/components/EducationPath.astro';
 import Emph from '@/components/Emph.astro';
 import Icon from '@/components/Icon.astro';
+import ModelCard from '@/components/ModelCard.astro';
+import ResultStats from '@/components/ResultStats.astro';
+import SectionHeader from '@/components/SectionHeader.astro';
+import SkillMap from '@/components/SkillMap.astro';
+import TrainingLog from '@/components/TrainingLog.astro';
 import { ABOUT, SITE, SOCIALS } from '@/config';
-import { photo } from '@/lib/photo';
 
-
-const details = [
-  { label: 'Languages', value: ABOUT.languages.map((l) => `${l.language} ${l.level}`).join(' · ') },
-  { label: 'Work permit', value: ABOUT.workPermit },
-  { label: 'Availability', value: ABOUT.startDate },
-].filter((d) => d.value);
+const personLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  mainEntity: {
+    '@type': 'Person',
+    name: SITE.name,
+    url: SITE.url,
+    email: `mailto:${SITE.email}`,
+    jobTitle: 'M.Sc. Artificial Intelligence student',
+    affiliation: { '@type': 'CollegeOrUniversity', name: 'University of Freiburg' },
+    alumniOf: { '@type': 'CollegeOrUniversity', name: 'Shiraz University of Technology' },
+    knowsLanguage: ABOUT.languages.map((l) => l.language),
+    knowsAbout: ABOUT.skills.flatMap((s) => s.items),
+    sameAs: SOCIALS.filter((s) => s.href.startsWith('http')).map((s) => s.href),
+  },
+};
 ---
 
-<BaseLayout title="About" description={`About ${SITE.name}: education, skills and how to get in touch.`}>
+<BaseLayout title="About" description={`About ${SITE.name}: experience, research, education and skills.`} jsonLd={personLd}>
   <section class="container-page pt-14 sm:pt-20">
-    <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-20">
+    <div class="grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-16">
       <div>
         <p class="eyebrow" data-decode>About</p>
-        <h1 class="mt-4 text-4xl font-semibold tracking-tighter sm:text-6xl" data-reveal style="--i: 1">
+        <h1 class="mt-4 text-5xl font-semibold tracking-[-0.02em] sm:text-7xl" data-reveal style="--i: 1">
           Hi, I'm <Emph text={`*${SITE.name.split(' ')[0]}*`} />.
         </h1>
-        <div class="mt-8 space-y-5 text-lg leading-relaxed text-fg-muted" data-reveal style="--i: 2">
+        <div class="mt-8 max-w-2xl space-y-5 text-lg leading-relaxed text-fg-muted" data-reveal style="--i: 2">
           {ABOUT.bio.map((paragraph) => <p>{paragraph}</p>)}
         </div>
         <div class="mt-10 flex flex-wrap gap-3" data-reveal style="--i: 3">
@@ -33,73 +46,85 @@ const details = [
           <a href={`mailto:${SITE.email}`} class="btn btn-ghost">
             <Icon name="mail" size={16} /> Get in touch
           </a>
+          {
+            SOCIALS.filter((s) => s.href.startsWith('http')).map(({ label, href, icon }) => (
+              <a href={href} class="icon-btn border border-border" aria-label={label} target="_blank" rel="me noopener">
+                <Icon name={icon} />
+              </a>
+            ))
+          }
         </div>
       </div>
-
-      <aside class="space-y-3 self-start text-sm" data-reveal style="--i: 3">
-        {
-          photo && (
-            <Image
-              src={photo}
-              alt={`Portrait of ${SITE.name}`}
-              widths={[320, 640]}
-              sizes="20rem"
-              class="aspect-[4/5] w-full rounded-2xl border border-border object-cover"
-              loading="eager"
-            />
-          )
-        }
-        <div class="rounded-2xl border border-border bg-surface p-5">
-          <p class="flex items-center gap-2 text-fg-muted"><Icon name="map-pin" size={16} /> {SITE.location}</p>
-          {
-            details.length > 0 && (
-              <dl class="mt-4 space-y-3 border-t border-border pt-4">
-                {details.map(({ label, value }) => (
-                  <div>
-                    <dt class="font-mono text-xs text-fg-subtle">{label}</dt>
-                    <dd class="mt-0.5 text-fg">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            )
-          }
-          <ul class="mt-4 space-y-2.5 border-t border-border pt-4">
-            {
-              SOCIALS.map(({ label, href, icon }) => (
-                <li>
-                  <a href={href} class="group flex items-center gap-2 text-fg-muted hover:text-fg" target={href.startsWith('http') ? '_blank' : undefined} rel="me noopener">
-                    <Icon name={icon} size={16} />
-                    <span class="link-underline">{label === 'Email' ? SITE.email : label}</span>
-                  </a>
-                </li>
-              ))
-            }
-          </ul>
-        </div>
-      </aside>
+      <div class="lg:sticky lg:top-[calc(var(--header-h)+1.5rem)]" data-reveal style="--i: 3">
+        <ModelCard />
+      </div>
     </div>
   </section>
 
-  <section class="container-page mt-24" aria-labelledby="education">
-    <h2 id="education" class="text-2xl font-semibold" data-reveal>Education</h2>
+  <section class="container-page mt-24" aria-label="Results">
+    <SectionHeader index="01" label="Results" title="Numbers I can *back up*" />
+    <ResultStats />
+  </section>
+
+  <section class="container-page mt-24" aria-label="Experience">
+    <SectionHeader index="02" label="Training log" title="Where the *weights* come from" />
+    <TrainingLog />
+  </section>
+
+  <section class="container-page mt-24" aria-label="Education">
+    <SectionHeader index="03" label="Education" title="The *descent* so far" />
     <EducationPath />
   </section>
 
-  <section class="container-page mt-24" aria-labelledby="skills">
-    <h2 id="skills" class="text-2xl font-semibold" data-reveal>Skills</h2>
-    <div class="mt-8 grid gap-4 sm:grid-cols-2">
-      {
-        ABOUT.skills.map((group, i) => (
-          <div class="rounded-2xl border border-border bg-surface p-6" data-reveal style={`--i: ${i}`}>
-            <h3 class="eyebrow">{group.area}</h3>
-            <ul class="mt-4 flex flex-wrap gap-1.5">
-              {group.items.map((skill) => (
-                <li class="tag">{skill}</li>
-              ))}
-            </ul>
-          </div>
-        ))
-      }
-    </div>
+  <section class="container-page mt-24" aria-label="Skills">
+    <SectionHeader index="04" label="Skills" title="What I work *with*" />
+    <SkillMap />
   </section>
+
+  {
+    ABOUT.now.length > 0 && (
+      <section class="container-page mt-24" aria-label="Now">
+        <SectionHeader index="05" label="Now" title="Currently *training*" />
+        <ul class="now-list">
+          {ABOUT.now.map((item, i) => (
+            <li data-reveal style={`--i: ${i}`}>
+              {item.href ? (
+                <a href={item.href} class="group inline-flex items-baseline gap-2 hover:text-fg">
+                  <span class="link-underline">{item.text}</span>
+                  <Icon name="arrow-right" size={15} class="shrink-0 translate-y-0.5 transition-transform group-hover:translate-x-0.5" />
+                </a>
+              ) : (
+                item.text
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
 </BaseLayout>
+
+<style>
+  .now-list {
+    display: grid;
+    max-width: 48rem;
+    border-top: 1px solid var(--border);
+  }
+  .now-list li {
+    position: relative;
+    padding: 1rem 0 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--fg-muted);
+    font-size: 1.0625rem;
+  }
+  .now-list li::before {
+    content: '';
+    position: absolute;
+    top: 1.55rem;
+    left: 0.2rem;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+</style>

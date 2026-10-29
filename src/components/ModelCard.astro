@@ -1,0 +1,138 @@
+---
+import Avatar from './Avatar.astro';
+import { ABOUT, SITE } from '@/config';
+
+const { card, languages, skills, workPermit } = ABOUT;
+// The first two tools of each area stand in for "training data".
+const trainingData = skills.flatMap((s) => s.items.slice(0, 2)).slice(0, 9);
+const slug = SITE.name.toLowerCase().replace(/\s+/g, '-');
+
+const rows: [string, string][] = [
+  ['base_model', card.baseModel],
+  ['fine_tuning', `${card.fineTuning} (in progress)`],
+  ['training_data', trainingData.join(', ')],
+  ['languages', languages.map((l) => `${l.language} (${l.level})`).join(' · ')],
+  ['intended_use', card.lookingFor],
+  ['deployment', card.where],
+  ...(workPermit ? ([['work_permit', workPermit]] as [string, string][]) : []),
+];
+---
+
+<div class="model-card">
+  <div class="head">
+    <Avatar size={32} />
+    <span class="slug">{slug}</span>
+    <span class="badge">model card</span>
+  </div>
+  <ul class="tags" aria-label="Focus areas">
+    {card.tags.map((tag) => <li>{tag}</li>)}
+  </ul>
+  <dl class="rows">
+    {
+      rows.map(([key, value]) => (
+        <div class="row">
+          <dt>{key}</dt>
+          <dd>{value}</dd>
+        </div>
+      ))
+    }
+  </dl>
+  <div class="foot">
+    <span class="status"><span class="dot" aria-hidden="true"></span> open to work</span>
+    <a href={SITE.cv} download class="link-underline">Download CV ↓</a>
+  </div>
+</div>
+
+<style>
+  .model-card {
+    overflow: hidden;
+    border: 1px solid var(--border-strong);
+    border-radius: 1rem;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    font-size: 0.8125rem;
+  }
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: oklch(from var(--fg) l c h / 0.025);
+  }
+  .slug {
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+  .badge {
+    margin-left: auto;
+    padding: 0.1rem 0.5rem;
+    border: 1px solid oklch(from var(--accent) l c h / 0.4);
+    border-radius: 999px;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0.85rem 1rem 0;
+  }
+  .tags li {
+    padding: 0.1rem 0.5rem;
+    border-radius: 0.35rem;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+  }
+  .rows {
+    padding: 0.5rem 1rem 0.25rem;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .row:last-child {
+    border-bottom: 0;
+  }
+  dt {
+    color: var(--fg-subtle);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+  dd {
+    color: var(--fg);
+    line-height: 1.5;
+  }
+  .foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--fg-muted);
+  }
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--tip);
+    box-shadow: 0 0 0 3px oklch(from var(--tip) l c h / 0.2);
+  }
+  .foot a {
+    color: var(--fg);
+  }
+</style>

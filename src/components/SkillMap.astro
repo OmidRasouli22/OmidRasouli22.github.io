@@ -1,0 +1,188 @@
+---
+import ContourArt from './ContourArt.astro';
+import { ABOUT } from '@/config';
+
+// Cluster centres in % of the plot. Each cluster's items sit on a slight arc below its label,
+// so labels never collide. Positions are hand-placed: this is a picture, not a learned embedding.
+const CENTRES = [
+  [14, 14],
+  [47, 9],
+  [79, 16],
+  [17, 58],
+  [50, 62],
+  [80, 57],
+] as const;
+
+const clusters = ABOUT.skills.map((group, c) => {
+  const [cx, cy] = CENTRES[c % CENTRES.length]!;
+  return {
+    ...group,
+    cx,
+    cy,
+    points: group.items.map((name, i) => ({
+      name,
+      // A gentle arc: items step down and drift sideways.
+      x: cx + Math.sin(i * 0.9 + c) * 3,
+      y: cy + 7 + i * 5.6,
+    })),
+  };
+});
+---
+
+<figure class="skill-map">
+  <div class="plot" aria-hidden="true">
+    <div class="terrain"><ContourArt seed="skills" /></div>
+    <span class="axis axis-x">dim 1</span>
+    <span class="axis axis-y">dim 2</span>
+    {
+      clusters.map((cluster, c) => (
+        <div class="cluster" style={`--c: ${c}`}>
+          <span class="cluster-label" style={`left: ${cluster.cx}%; top: ${cluster.cy}%`}>
+            {cluster.area}
+          </span>
+          {cluster.points.map((p) => (
+            <span class="point" style={`left: ${p.x}%; top: ${p.y}%`}>
+              <span class="dot" />
+              {p.name}
+            </span>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="list">
+    {
+      ABOUT.skills.map((group) => (
+        <div class="group">
+          <h3 class="eyebrow">{group.area}</h3>
+          <ul class="mt-3 flex flex-wrap gap-1.5">
+            {group.items.map((skill) => (
+              <li class="tag">{skill}</li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+  <figcaption class="caption">fig. 2 · skills grouped by area, drawn like an embedding plot (placed by hand, not learned)</figcaption>
+</figure>
+
+<style>
+  .plot {
+    display: none;
+  }
+  .list {
+    display: grid;
+    gap: 1rem;
+  }
+  @media (width >= 40rem) {
+    .list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .group {
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .caption {
+    margin-top: 1rem;
+    color: var(--fg-subtle);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+  }
+
+  @media (width >= 64rem) {
+    .list {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .plot {
+      display: block;
+      position: relative;
+      aspect-ratio: 16 / 8;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      background:
+        radial-gradient(circle, var(--border) 1px, transparent 1.2px) 0 0 / 32px 32px,
+        var(--bg-subtle);
+    }
+    .terrain {
+      position: absolute;
+      inset: 0;
+      opacity: 0.35;
+    }
+    /* Only the contour lines here; the descent marker would sit on top of labels. */
+    .terrain :global(.descent),
+    .terrain :global(.minimum),
+    .terrain :global(.minimum-ring) {
+      display: none;
+    }
+    .axis {
+      position: absolute;
+      color: var(--fg-subtle);
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .axis-x {
+      right: 1rem;
+      bottom: 0.75rem;
+    }
+    .axis-y {
+      top: 1rem;
+      left: 0.75rem;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+    }
+    .cluster-label {
+      position: absolute;
+      transform: translateX(-0.2rem);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 200ms var(--ease-out);
+    }
+    .point {
+      position: absolute;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: var(--fg-muted);
+      font-size: 0.8125rem;
+      white-space: nowrap;
+      transition:
+        color 200ms var(--ease-out),
+        opacity 200ms var(--ease-out);
+    }
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      box-shadow: 0 0 0 3px oklch(from var(--accent-2) l c h / 0.15);
+    }
+    .cluster:nth-child(odd of .cluster) .dot {
+      background: var(--accent);
+      box-shadow: 0 0 0 3px oklch(from var(--accent) l c h / 0.15);
+    }
+    /* Hovering a cluster brings it forward and fades the rest. */
+    .plot:has(.cluster:hover) .cluster:not(:hover) .point {
+      opacity: 0.35;
+    }
+    .cluster:hover .point {
+      color: var(--fg);
+    }
+  }
+</style>

@@ -1,0 +1,153 @@
+---
+import { ABOUT } from '@/config';
+
+// Placeholder entries (todo: true) are only shown while developing.
+const entries = ABOUT.experience.filter((e) => !e.todo || import.meta.env.DEV);
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<ol class="log">
+  {
+    entries.map((entry, i) => (
+      <li class:list={['entry', { todo: entry.todo }]} data-reveal style={`--i: ${i}`}>
+        <div class="when">
+          <span class="ckpt">ckpt-{pad(entries.length - i)}</span>
+          <span class="period">{entry.period || 'dates tbd'}</span>
+        </div>
+        <div class="what">
+          <h3 class="title">
+            {entry.title}
+            {entry.todo && <span class="todo-badge">TODO · hidden in production</span>}
+          </h3>
+          <p class="org">{[entry.org, entry.kind].filter(Boolean).join(' · ')}</p>
+          <ul class="highlights">
+            {entry.highlights.map((h) => (
+              <li>
+                {h.text}
+                {h.href && (
+                  <a href={h.href} class="more">
+                    project →
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+          {entry.stack.length > 0 && (
+            <ul class="mt-4 flex flex-wrap gap-1.5" aria-label="Stack">
+              {entry.stack.map((tech) => (
+                <li class="tag">{tech}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .log {
+    position: relative;
+  }
+  .entry {
+    position: relative;
+    display: grid;
+    gap: 0.75rem;
+    padding: 1.75rem 0 1.75rem 1.75rem;
+    border-left: 1px solid var(--border-strong);
+  }
+  .entry::before {
+    content: '';
+    position: absolute;
+    top: 2.1rem;
+    left: -5px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--fg-subtle);
+    box-shadow: 0 0 0 4px var(--bg);
+  }
+  .entry:first-child::before {
+    background: var(--fg);
+    box-shadow:
+      0 0 0 4px var(--bg),
+      0 0 0 5px var(--accent);
+  }
+  @media (width >= 48rem) {
+    .entry {
+      grid-template-columns: 10rem minmax(0, 1fr);
+      gap: 2.5rem;
+    }
+  }
+  .when {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding-top: 0.15rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+  .ckpt {
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+  .period {
+    color: var(--fg-muted);
+  }
+  .title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .org {
+    margin-top: 0.25rem;
+    color: var(--fg-muted);
+  }
+  .highlights {
+    margin-top: 0.9rem;
+    display: grid;
+    gap: 0.5rem;
+    max-width: 44rem;
+    color: var(--fg-muted);
+    line-height: 1.65;
+  }
+  .highlights li {
+    position: relative;
+    padding-left: 1.1rem;
+  }
+  .highlights li::before {
+    content: '';
+    position: absolute;
+    top: 0.72em;
+    left: 0;
+    width: 0.45rem;
+    height: 1px;
+    background: var(--accent);
+  }
+  .more {
+    margin-left: 0.4rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+  .more:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .todo {
+    border-left-style: dashed;
+    opacity: 0.75;
+  }
+  .todo-badge {
+    margin-left: 0.6rem;
+    padding: 0.1rem 0.45rem;
+    border: 1px dashed var(--warning);
+    border-radius: 0.35rem;
+    color: var(--warning);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+</style>

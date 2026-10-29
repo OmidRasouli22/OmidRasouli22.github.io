@@ -88,27 +88,88 @@ export const SOCIALS: { label: string; href: string; icon: IconName }[] = [
   { label: 'Email', href: `mailto:${SITE.email}`, icon: 'mail' },
 ];
 
-/** About page content. */
+/**
+ * About page content. Shown as written: empty fields are hidden, and entries with `todo: true`
+ * only appear in `npm run dev` (with a TODO badge), never in the production build.
+ */
 export const ABOUT = {
   bio: [
-    "I'm Omid. I'm doing my M.Sc. in Artificial Intelligence at the University of Freiburg, and I've worked as a software engineer for more than four years, including freelance projects, mostly with Python, TypeScript, Node.js and Next.js.",
-    "These days most of my time goes into machine learning and data engineering: AutoML and tabular foundation models like TabPFN on the research side, and data pipelines that run reliably on the engineering side. I'm looking for AI Engineer, Data Engineer, Data Scientist and Backend roles in Germany.",
+    "I'm Omid. I'm doing my M.Sc. in Artificial Intelligence at the University of Freiburg. I've been writing software professionally for more than four years, including freelance work, and from 2022 to 2025 I worked as a developer on backend and full-stack web apps with TypeScript, Node.js, NestJS, React/Next.js and SQL.",
+    "Now I work more with Python, machine learning and data: tabular foundation models and AutoML in the university labs, and data pipelines on Databricks in my own projects. I'm looking for working student roles in backend, data engineering and AI engineering.",
   ],
-  /**
-   * Practical details for recruiters in Germany. Anything left empty is hidden.
-   * languages: e.g. [{ language: 'English', level: 'C1' }, { language: 'German', level: 'B1' }]
-   * workPermit: e.g. 'Allowed to work in Germany, no sponsorship needed'
-   * startDate: e.g. 'Working student now, full-time from autumn 2027'
-   */
-  languages: [] as { language: string; level: string }[],
+  /** The "model card" next to the intro. */
+  card: {
+    baseModel: 'Software developer, 2022 – 2025',
+    fineTuning: 'M.Sc. Artificial Intelligence, University of Freiburg',
+    tags: ['ai-engineering', 'data-engineering', 'backend'],
+    lookingFor: 'Working student roles in backend, data engineering and AI engineering',
+    where: 'Freiburg, Stuttgart or remote',
+  },
+  /** Big numbers under the intro. Only use numbers you can back up. */
+  stats: [
+    { value: '4+', label: 'years writing software professionally' },
+    { value: '2', label: 'research labs at the University of Freiburg' },
+    { value: '5.3×', label: 'fewer FLOPs for nanoTabPFN with a data curriculum' },
+    { value: '14/16', label: 'datasets won in the same study' },
+  ],
+  languages: [
+    { language: 'English', level: 'C1' },
+    { language: 'German', level: 'learning, B1 soon' },
+    { language: 'Persian', level: 'native' },
+  ] as { language: string; level: string }[],
+  /** e.g. 'Allowed to work in Germany, no sponsorship needed'. Hidden while empty. */
   workPermit: '',
-  startDate: '',
+  /** Newest first. `href` links a highlight to a project page. */
+  experience: [
+    {
+      period: 'During the M.Sc.',
+      title: 'Research projects',
+      org: 'University of Freiburg',
+      kind: 'Deep Learning Lab · AutoML Lab',
+      highlights: [
+        {
+          text: 'Deep Learning Lab: trained a small transformer for tabular data (nanoTabPFN) with an easy-to-hard data curriculum. It reached the same results with 5.3× fewer FLOPs and won on 14 of 16 datasets.',
+          href: '/projects/nanotabpfn-curriculum-pretraining/',
+        },
+        {
+          text: 'AutoML Lab: team project on AutoML for tabular regression (Auto-TabPFN). I worked on the baseline, the Optuna search and the data analysis.',
+          href: '/projects/auto-tabpfn/',
+        },
+      ],
+      stack: ['Python', 'PyTorch', 'Optuna', 'scikit-learn', 'pandas'],
+    },
+    {
+      period: '2022 – 2025',
+      title: 'Software developer',
+      org: '', // TODO: company name
+      kind: 'Backend and full-stack web apps',
+      highlights: [{ text: 'Built backend and full-stack web applications, from REST APIs and databases to React and Next.js front ends.' }],
+      stack: ['TypeScript', 'Node.js', 'NestJS', 'Express', 'React', 'Next.js', 'SQL'],
+    },
+    {
+      period: '', // TODO: dates
+      title: 'Freelance software engineer',
+      org: '',
+      kind: 'Freelance',
+      highlights: [{ text: 'TODO: clients, what you built, and the results.' }],
+      stack: [],
+      todo: true,
+    },
+  ] as {
+    period: string;
+    title: string;
+    org: string;
+    kind: string;
+    highlights: { text: string; href?: string }[];
+    stack: string[];
+    todo?: boolean;
+  }[],
   education: [
     {
       degree: 'M.Sc. Artificial Intelligence',
       school: 'University of Freiburg',
       location: 'Freiburg, Germany',
-      period: '', // TODO: e.g. '2024 – present'
+      period: '', // TODO: e.g. '2025 – present'
     },
     {
       degree: 'B.Sc. Computer Engineering',
@@ -117,23 +178,17 @@ export const ABOUT = {
       period: '2018 – 2023',
     },
   ],
-  // TODO: review the skill lists
   skills: [
-    {
-      area: 'AI / ML',
-      items: ['Python', 'PyTorch', 'scikit-learn', 'AutoML', 'TabPFN', 'RAG'],
-    },
-    {
-      area: 'Data Engineering',
-      items: ['SQL', 'Databricks', 'Spark', 'ETL / ELT pipelines'],
-    },
-    {
-      area: 'Backend',
-      items: ['Python', 'Node.js', 'TypeScript', 'REST APIs'],
-    },
-    {
-      area: 'Frontend',
-      items: ['TypeScript', 'React', 'Next.js', 'Tailwind CSS'],
-    },
+    { area: 'Machine learning', items: ['Python', 'PyTorch', 'scikit-learn', 'Optuna', 'pandas'] },
+    { area: 'Data engineering', items: ['dbt', 'Airflow', 'Databricks', 'PySpark', 'DuckDB', 'Streamlit'] },
+    { area: 'Databases', items: ['SQL', 'PostgreSQL', 'MySQL', 'MongoDB', 'Prisma'] },
+    { area: 'Backend', items: ['TypeScript', 'Node.js', 'NestJS', 'Express', 'REST APIs'] },
+    { area: 'Frontend', items: ['React', 'Next.js'] },
+    { area: 'Tools', items: ['Git', 'Docker', 'Kubernetes', 'GitHub Actions', 'Linux'] },
   ],
+  /** What you're doing right now. */
+  now: [
+    { text: 'Building German Job Market Radar, a pipeline over Bundesagentur für Arbeit job posts on Databricks', href: '/projects/german-job-market-radar/' },
+    { text: 'Learning German, B1 soon' },
+  ] as { text: string; href?: string }[],
 } as const;

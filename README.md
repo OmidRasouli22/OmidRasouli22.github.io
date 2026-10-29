@@ -125,13 +125,26 @@ write them, and re-run it if you change the model.
 **If the model can't be downloaded during a build**, the build still succeeds with a warning and the site ships
 with keyword search only; the Meaning button shows as unavailable.
 
-## About page and hero extras
+## About page
 
-- **Photo:** put an image at `src/assets/about/photo.jpg` (or `.png` / `.webp`). It shows up on the About page
-  automatically, resized and optimised. Remove the file to hide it.
-- **Languages, work permit, availability:** fill in `languages`, `workPermit` and `startDate` in `ABOUT` in
-  `src/config.ts`. Each one only appears once it has a value.
-- **"Now" line:** `SITE.now` in `src/config.ts`, shown at the bottom of the hero. Set `text: ''` to hide it.
+Everything on `/about/` comes from `ABOUT` in `src/config.ts`:
+
+- `bio`: the intro paragraphs.
+- `card`: the "model card" (base model, fine-tuning, what you're looking for, where). Languages and the
+  first skills of each area are added to it automatically. `workPermit` appears as an extra row once filled in.
+- `stats`: the big numbers. Only use numbers you can back up.
+- `experience`: the "training log", newest first. Each entry has `period`, `title`, `org`, `kind`,
+  `highlights` (with an optional `href` to a project page) and `stack`. An entry with `todo: true` is only shown
+  in `npm run dev`, with a TODO badge, and never in the production build. Use that for entries you haven't
+  written yet.
+- `education`: drawn as the descending path, oldest first.
+- `skills`: shown as the skill map on large screens and as grouped lists on small ones.
+- `now`: the "Currently" list at the bottom; items can link somewhere with `href`.
+
+**Photo:** put an image at `src/assets/about/photo.jpg` (or `.png` / `.webp`). It replaces the "OR" monogram in
+the post bylines and author cards, resized and optimised.
+
+**"Now" line on the home page:** `SITE.now` in `src/config.ts`. Set `text: ''` to hide it.
 
 ## Project visuals
 
@@ -176,9 +189,10 @@ contrast stays readable whichever hue you pick.
 
 All colours, radii and easing curves are CSS variables at the top of `src/styles/global.css` (`:root` = light,
 `[data-theme='dark']` = dark), exposed to Tailwind as `bg-surface`, `text-fg-muted`, `border-border`, `text-accent`,
-and so on. Fonts are Geist, Geist Mono and Instrument Serif (italic, for emphasis), self-hosted via Fontsource
-(`src/layouts/BaseLayout.astro`). The code
-highlighting themes are set in `astro.config.mjs` → `markdown.shikiConfig`.
+and so on. Fonts are Bricolage Grotesque (headings), Geist (text), Geist Mono and Instrument Serif (italic, for
+emphasis), all self-hosted via Fontsource. To use Geist for headings too, set `--font-display: var(--font-sans)`
+in `global.css`. The fonts are imported in `src/layouts/BaseLayout.astro`. The code highlighting themes are set in
+`astro.config.mjs` → `markdown.shikiConfig`.
 
 The favicon is `public/favicon.svg`. Its gradient colours are hard-coded, so update them if you change the accent.
 
