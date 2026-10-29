@@ -27,15 +27,17 @@ export function slugify(value: string): string {
     .replace(/^-|-$/g, '');
 }
 
-/** Estimated reading time in minutes, ignoring MDX imports and JSX tags. */
-export function readingTime(body = ''): number {
+/** Words of prose in a post, ignoring MDX imports, JSX tags and Markdown syntax. */
+export function wordCount(body = ''): number {
   const text = body
     .replace(/^(import|export) .*$/gm, '')
     .replace(/<[^>]+>/g, ' ')
     .replace(/[#*_`>[\]()$|-]/g, ' ');
-  const words = text.split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words / 220));
+  return text.split(/\s+/).filter(Boolean).length;
 }
+
+/** Estimated reading time in minutes. */
+export const readingTime = (body = '') => Math.max(1, Math.round(wordCount(body) / 220));
 
 /** "28 Oct 2026": no comma, so it is safe inside Pagefind's comma-separated meta attribute. */
 export const metaDate = (date: Date) =>

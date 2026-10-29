@@ -7,16 +7,14 @@ import { getPosts, getRelatedPosts } from '@/lib/posts';
 
 export const getStaticPaths = (async () => {
   const posts = await getPosts();
-  return posts.map((post, i) => ({
-    params: { slug: post.id },
-    props: {
-      post,
-      // `posts` is newest-first.
-      next: posts[i - 1],
-      prev: posts[i + 1],
-      related: getRelatedPosts(post, posts),
-    },
-  }));
+  return posts.map((post, i) => {
+    // `posts` is newest-first.
+    const next = posts[i - 1];
+    const prev = posts[i + 1];
+    // Prev/next already have cards at the end of the post; don't list them twice.
+    const others = posts.filter((p) => p !== next && p !== prev);
+    return { params: { slug: post.id }, props: { post, next, prev, related: getRelatedPosts(post, others) } };
+  });
 }) satisfies GetStaticPaths;
 
 const { post, prev, next, related } = Astro.props;

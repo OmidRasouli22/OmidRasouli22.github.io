@@ -21,7 +21,10 @@ const blog = defineCollection({
       .refine((post) => !post.cover || post.coverAlt, {
         message: '`coverAlt` is required when `cover` is set',
         path: ['coverAlt'],
-      }),
+      })
+      // `title: 'Notes on *TabPFN*'` sets that word in the serif on the post page. Everywhere else
+      // (meta tags, RSS, search, lists) `title` is the plain text and `displayTitle` keeps the marks.
+      .transform((post) => ({ ...post, displayTitle: post.title, title: post.title.replace(/\*/g, '') })),
 });
 
 const projects = defineCollection({

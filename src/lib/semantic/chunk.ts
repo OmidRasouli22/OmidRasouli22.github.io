@@ -17,7 +17,7 @@ const SKIP = new Set(['script', 'style', 'svg', 'pre', 'nav', 'button', 'header'
 const HEADINGS = new Set(['h2', 'h3', 'h4']);
 // Elements whose text is read as one block (instead of descending further).
 const LEAF_BLOCKS = new Set(['p', 'figcaption', 'dt', 'dd', 'h5', 'h6', 'tr', 'summary']);
-const SKIP_CLASSES = ['heading-anchor', 'copy-button', 'data-footnote-backref'];
+const SKIP_CLASSES = ['heading-anchor', 'copy-button', 'copy-tex', 'code-head', 'data-footnote-backref'];
 
 const ELEMENT = 1;
 const TEXT = 3;

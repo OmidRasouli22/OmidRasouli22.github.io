@@ -1,15 +1,12 @@
 ---
-import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import EducationPath from '@/components/EducationPath.astro';
 import Emph from '@/components/Emph.astro';
 import Icon from '@/components/Icon.astro';
 import { ABOUT, SITE, SOCIALS } from '@/config';
+import { photo } from '@/lib/photo';
 
-// Drop a photo at src/assets/about/photo.(jpg|png|webp) and it shows up here.
-const photo = Object.values(
-  import.meta.glob<{ default: ImageMetadata }>('/src/assets/about/photo.{jpg,jpeg,png,webp,avif}', { eager: true }),
-)[0]?.default;
 
 const details = [
   { label: 'Languages', value: ABOUT.languages.map((l) => `${l.language} ${l.level}`).join(' · ') },
@@ -85,26 +82,7 @@ const details = [
 
   <section class="container-page mt-24" aria-labelledby="education">
     <h2 id="education" class="text-2xl font-semibold" data-reveal>Education</h2>
-    <ol class="mt-8 grid gap-4 md:grid-cols-2">
-      {
-        ABOUT.education.map((item, i) => (
-          <li class="rounded-2xl border border-border bg-surface p-6" data-reveal style={`--i: ${i}`}>
-            <div class="flex items-start gap-4">
-              <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">
-                <Icon name="graduation" size={20} />
-              </span>
-              <div>
-                <h3 class="font-semibold">{item.degree}</h3>
-                <p class="mt-1 text-fg-muted">{item.school}</p>
-                <p class="mt-2 font-mono text-xs text-fg-subtle">
-                  {[item.period, item.location].filter(Boolean).join(' · ')}
-                </p>
-              </div>
-            </div>
-          </li>
-        ))
-      }
-    </ol>
+    <EducationPath />
   </section>
 
   <section class="container-page mt-24" aria-labelledby="skills">

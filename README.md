@@ -30,13 +30,13 @@ In Astro 7, `astro dev` runs in the background. Stop it with `npx astro dev stop
 
    | Field         | Required | Notes                                                                  |
    | ------------- | -------- | ---------------------------------------------------------------------- |
-   | `title`       | yes      | ≤ 120 chars                                                            |
+   | `title`       | yes      | ≤ 120 chars. Wrap one word in `*asterisks*` to set it in the serif     |
    | `description` | yes      | ≤ 220 chars; used on cards, in search, RSS and social previews         |
    | `pubDate`     | yes      | `2026-01-31`                                                           |
    | `updatedDate` | no       | Shown as "Updated …"                                                   |
    | `tags`        | no       | `[machine-learning, python]`; each tag gets a page at `/tags/<tag>/`   |
    | `draft`       | no       | `true` = visible in dev only, never built for production               |
-   | `cover`       | no       | Relative path to an image, e.g. `../../assets/blog/my-post-slug/cover.png` |
+   | `cover`       | no       | Relative path to an image, e.g. `../../assets/blog/my-post-slug/cover.png`. Without one, a contour banner is generated from the file name |
    | `coverAlt`    | if cover | Alt text for the cover                                                 |
 
 3. Put images in `src/assets/blog/my-post-slug/` and reference them with relative paths. They are resized and
@@ -48,18 +48,27 @@ once you have real posts.
 
 ### What you can use in a post
 
-- **Code blocks** with a language (` ```python `) are highlighted at build time and get a copy button.
-- **Math**: `$inline$` and `$$display$$`, rendered with KaTeX. The KaTeX CSS only loads on posts that use math.
+- **Code blocks** are highlighted at build time and get a header with a copy button:
+  - ` ```python title="train.py" ` shows a file name instead of the language
+  - ` ```python {3-5} ` highlights lines 3 to 5
+  - a `// [!code ++]` or `// [!code --]` comment at the end of a line (`# [!code ++]` in Python) marks it as
+    added or removed; the copy button leaves removed lines out
+- **Math**: `$inline$` and `$$display$$` (KaTeX). Display equations are numbered and get a "copy TeX" button.
+  The KaTeX CSS only loads on posts that use math.
+- **Footnotes** (`text[^1]` … `[^1]: note`) appear as sidenotes in the right margin on wide screens and as a
+  list at the end on smaller ones.
+- **Figures**: `import { Image } from 'astro:assets'` and wrap it in a `<figure>` with a `<figcaption>`. Captions
+  are numbered ("Fig. 1"), figures use the margin on wide screens, and every image can be clicked to enlarge.
 - **Callouts** (no import needed):
   ```mdx
   <Callout type="tip" title="Optional title">Text with **markdown**.</Callout>
   ```
   `type` is `note` (default), `tip`, `warning` or `danger`.
-- **Images with captions**: `import { Image } from 'astro:assets'` and wrap it in a `<figure>`. See the example post.
-- Tables, footnotes, task lists and strikethrough (GitHub-flavoured Markdown).
+- Tables, task lists and strikethrough (GitHub-flavoured Markdown).
 
-Reading time, the table of contents, heading anchors, prev/next links, related posts (by shared tags), the RSS
-entry, sitemap entry, search index entry and the Open Graph image are all generated automatically.
+Generated for every post: reading time and word count, the table of contents with progress, heading links (click
+to copy), an author card, share buttons, a citation (plain text and BibTeX), previous/next cards, related posts
+(by shared tags), the RSS and sitemap entries, both search indexes and the Open Graph image.
 
 ## Adding a project
 
@@ -217,6 +226,11 @@ scripts/                    ← semantic search indexer and its evaluation
 - **Headings:** in `SectionHeader`, `BlogHeader` and the footer, `*word*` sets that word in the italic serif. One per
   heading is plenty.
 - **Small labels** with `data-decode` scramble into place the first time they scroll into view.
+- **Post page** (`src/layouts/PostLayout.astro`, behaviour in `src/lib/post-reading.ts`): from 64rem the table of
+  contents moves into a left rail; from 80rem a right margin column holds sidenotes and wide figures. Code frames
+  and equation wrappers are added at build time by the plugins in `src/plugins/`.
+- **Blog index**: the newest post is a featured card, the rest are grouped by year (`PostArchive`).
+- **About**: education is drawn as a descending path (`EducationPath`), oldest first.
 - **Page transitions** use Astro's `ClientRouter`. Post titles in the list morph into the post header.
 - Everything respects `prefers-reduced-motion`.
 

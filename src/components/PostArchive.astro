@@ -1,0 +1,66 @@
+---
+import PostList from './PostList.astro';
+import type { Post } from '@/lib/posts';
+
+interface Props {
+  posts: Post[];
+}
+
+const byYear = new Map<number, Post[]>();
+for (const post of Astro.props.posts) {
+  const year = post.data.pubDate.getUTCFullYear();
+  byYear.set(year, [...(byYear.get(year) ?? []), post]);
+}
+---
+
+<div class="space-y-12">
+  {
+    [...byYear].map(([year, posts]) => (
+      <section class="year-group" aria-label={`Posts from ${year}`}>
+        <h2 class="year" data-reveal>
+          {year}
+          <span class="count">{posts.length} {posts.length === 1 ? 'post' : 'posts'}</span>
+        </h2>
+        <PostList posts={posts} as="h3" />
+      </section>
+    ))
+  }
+</div>
+
+<style>
+  .year-group {
+    display: grid;
+    gap: 1rem;
+  }
+  .year {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 2.5rem;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .count {
+    display: block;
+    margin-top: 0.6rem;
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-subtle);
+  }
+  @media (width >= 48rem) {
+    .year-group {
+      grid-template-columns: 9rem minmax(0, 1fr);
+      gap: 2rem;
+    }
+    .year {
+      position: sticky;
+      top: calc(var(--header-h) + 2rem);
+      align-self: start;
+      padding-top: 1.5rem;
+      font-size: 3rem;
+    }
+  }
+</style>

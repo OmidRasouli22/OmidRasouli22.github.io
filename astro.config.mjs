@@ -9,6 +9,10 @@ import rehypeKatex from 'rehype-katex';
 import { remarkMathFlag } from './src/plugins/remark-math-flag.mjs';
 import { rehypeHeadingAnchors } from './src/plugins/rehype-heading-anchors.mjs';
 import { rehypeTaskListLabels } from './src/plugins/rehype-task-list-labels.mjs';
+import { rehypeCodeFrame } from './src/plugins/rehype-code-frame.mjs';
+import { rehypeMathBlock } from './src/plugins/rehype-math-block.mjs';
+import { transformerCodeTitle } from './src/plugins/shiki-code-title.mjs';
+import { transformerMetaHighlight, transformerNotationDiff, transformerNotationHighlight } from '@shikijs/transformers';
 import { SITE } from './src/config.ts';
 
 export default defineConfig({
@@ -25,12 +29,20 @@ export default defineConfig({
     // keeps remark/rehype plugins (KaTeX, heading anchors) working.
     processor: unified({
       remarkPlugins: [remarkMath, remarkMathFlag],
-      rehypePlugins: [rehypeHeadingIds, rehypeHeadingAnchors, rehypeTaskListLabels, rehypeKatex],
+      rehypePlugins: [rehypeHeadingIds, rehypeHeadingAnchors, rehypeTaskListLabels, rehypeCodeFrame, rehypeKatex, rehypeMathBlock],
     }),
     shikiConfig: {
       themes: { light: 'github-light-default', dark: 'github-dark-default' },
       defaultColor: false,
       wrap: false,
+      // ```py title="train.py" {3-5}   → file name in the header, lines 3–5 highlighted
+      // `// [!code ++]` / `// [!code --]` / `// [!code highlight]` comments mark diff and highlight lines
+      transformers: [
+        transformerCodeTitle(),
+        transformerMetaHighlight(),
+        transformerNotationHighlight({ matchAlgorithm: 'v3' }),
+        transformerNotationDiff({ matchAlgorithm: 'v3' }),
+      ],
     },
   },
   image: {

@@ -3,7 +3,8 @@ import type { GetStaticPaths } from 'astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import BlogHeader from '@/components/BlogHeader.astro';
 import Pagination from '@/components/Pagination.astro';
-import PostList from '@/components/PostList.astro';
+import FeaturedPost from '@/components/FeaturedPost.astro';
+import PostArchive from '@/components/PostArchive.astro';
 import { SITE } from '@/config';
 import { getPosts, getTags } from '@/lib/posts';
 
@@ -13,6 +14,9 @@ export const getStaticPaths = (async ({ paginate }) => {
 }) satisfies GetStaticPaths;
 
 const { page, tags } = Astro.props;
+// The newest post gets the big card on the first page; the rest are grouped by year.
+const featured = page.currentPage === 1 ? page.data[0] : undefined;
+const rest = featured ? page.data.slice(1) : page.data;
 const title = page.currentPage === 1 ? 'Blog' : `Blog, page ${page.currentPage}`;
 ---
 
@@ -27,9 +31,18 @@ const title = page.currentPage === 1 ? 'Blog' : `Blog, page ${page.currentPage}`
 
     {
       page.data.length > 0 ? (
-        <div class="mt-14">
-          <PostList posts={page.data} as="h2" />
-        </div>
+        <>
+          {featured && (
+            <div class="mt-14">
+              <FeaturedPost post={featured} />
+            </div>
+          )}
+          {rest.length > 0 && (
+            <div class="mt-16">
+              <PostArchive posts={rest} />
+            </div>
+          )}
+        </>
       ) : (
         <p class="mt-12 text-fg-muted">No posts yet.</p>
       )

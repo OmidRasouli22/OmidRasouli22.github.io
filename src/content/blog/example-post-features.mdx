@@ -1,10 +1,8 @@
 ---
-title: 'Example post: every feature of this blog'
-description: A reference post with headings, code, math, callouts, images and tables. Copy its structure when you start a new article.
+title: 'Example post: every feature of this *blog*'
+description: A reference post with headings, code, math, sidenotes, figures and tables. Copy its structure when you start a new article.
 pubDate: 2026-10-28
 tags: [example, machine-learning, python]
-cover: ../../assets/blog/example-post/cover.png
-coverAlt: Concentric contour lines of a loss landscape with a dotted optimisation path converging to the minimum.
 ---
 
 import { Image } from 'astro:assets';
@@ -17,12 +15,18 @@ import pipeline from '../../assets/blog/example-post/pipeline.png';
 </Callout>
 
 Body text is set for long-form reading: a comfortable size, a limited line length and generous spacing. You can
-use **bold**, _italics_, `inline code`, [links](https://astro.build) and ~~strikethrough~~. Footnotes work too.[^1]
+use **bold**, _italics_, `inline code`, [links](https://astro.build) and ~~strikethrough~~. Footnotes turn into
+notes in the margin on wide screens, right next to the sentence they belong to.[^1]
+
+The title above has one word in the serif: write `title: 'Every feature of this *blog*'` in the frontmatter.
+Posts without a `cover` image get a contour banner generated from the post's file name, so every post has its
+own picture.[^2]
 
 ## Headings and the table of contents
 
-Every `##` and `###` heading shows up in the table of contents. On large screens it sticks to the right side,
-on mobile it folds up at the top. Hover a heading to see its anchor link.
+Every `##` and `###` heading shows up in the table of contents. On large screens it sits in the left column with
+a line that fills as you read, and it tells you how many minutes are left. On mobile it folds up at the top.
+Hover a heading to see its link; clicking it also copies the link.
 
 ### A third-level heading
 
@@ -30,10 +34,10 @@ Use `###` for subsections. Avoid going deeper than `####`; if you need to, the s
 
 ## Code blocks
 
-Code is highlighted at build time with Shiki (no JavaScript shipped), switches with the colour theme, and gets a
-copy button. Here is a numerically stable softmax cross-entropy in Python:
+Code is highlighted at build time (no JavaScript shipped) and switches with the colour theme. Add
+`title="file.py"` after the language for a file name, and `{4-5}` to highlight lines:
 
-```python
+```python title="losses.py" {4-5}
 import numpy as np
 
 
@@ -46,15 +50,12 @@ def log_softmax(logits: np.ndarray) -> np.ndarray:
 def cross_entropy(logits: np.ndarray, targets: np.ndarray) -> float:
     log_probs = log_softmax(logits)
     return float(-log_probs[np.arange(len(targets)), targets].mean())
-
-
-logits = np.array([[2.0, 0.5, -1.0], [0.1, 0.2, 3.0]])
-print(cross_entropy(logits, np.array([0, 2])))
 ```
 
-And a small typed retry helper in TypeScript:
+To show a change, mark lines with `// [!code ++]` and `// [!code --]` comments (`# [!code ++]` in Python).
+The copy button leaves out removed lines:
 
-```ts
+```ts title="retry.ts"
 type RetryOptions = { retries?: number; baseDelayMs?: number };
 
 export async function withRetry<T>(
@@ -66,15 +67,15 @@ export async function withRetry<T>(
       return await fn();
     } catch (error) {
       if (attempt >= retries) throw error;
-      // Exponential backoff with jitter.
-      const delay = baseDelayMs * 2 ** attempt * (0.5 + Math.random());
+      const delay = baseDelayMs * 2 ** attempt; // [!code --]
+      const delay = baseDelayMs * 2 ** attempt * (0.5 + Math.random()); // [!code ++]
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 }
 ```
 
-Shell snippets work the same way:
+Without a title, the header shows the language:
 
 ```bash
 npm run dev
@@ -83,13 +84,19 @@ npm run dev
 ## Math
 
 Inline math uses single dollars: the softmax of a logit vector $z \in \mathbb{R}^K$ is
-$\sigma(z)_i = e^{z_i} / \sum_j e^{z_j}$. Display math uses double dollars:
+$\sigma(z)_i = e^{z_i} / \sum_j e^{z_j}$. Display math uses double dollars, gets a number, and has a button to
+copy its TeX source when you hover it:
 
 $$
 \mathcal{L}(\theta) = -\frac{1}{N} \sum_{n=1}^{N} \log \frac{\exp\left(f_\theta(x_n)_{y_n}\right)}{\sum_{k=1}^{K} \exp\left(f_\theta(x_n)_k\right)}
 $$
 
-The KaTeX stylesheet is only loaded on posts that actually contain math.
+$$
+\theta_{t+1} = \theta_t - \eta \, \nabla_\theta \mathcal{L}(\theta_t)
+$$
+
+Equation (2) is plain gradient descent, the same thing the dots on the home page are doing.[^3] The KaTeX
+stylesheet is only loaded on posts that contain math.
 
 ## Callouts
 
@@ -107,19 +114,18 @@ There are four variants, and you can use them in any `.mdx` post without importi
   Never commit API keys. Use environment variables or a secret manager.
 </Callout>
 
-## Images
+## Figures
 
 Images stored next to your posts are optimised automatically (resized, converted to modern formats, lazy-loaded,
-with `srcset`). Plain Markdown syntax works:
-
-![A five-step ML pipeline: ingest, validate, transform, train, serve.](../../assets/blog/example-post/pipeline.png)
-
-For a caption, use the `Image` component inside a `figure`:
+with `srcset`). Click any image to enlarge it. Use the `Image` component inside a `figure` for a caption; captions
+are numbered for you, and on wide screens figures use the extra space on the right:
 
 <figure>
   <Image src={pipeline} alt="A five-step ML pipeline: ingest, validate, transform, train, serve." />
   <figcaption>A typical batch ML pipeline. Each stage should be independently testable.</figcaption>
 </figure>
+
+Plain Markdown images work too: `![Alt text](../../assets/blog/my-post/image.png)`.
 
 ## Tables
 
@@ -145,4 +151,10 @@ Wide tables scroll horizontally on small screens instead of breaking the layout.
 >
 > Kent Beck
 
-[^1]: Footnotes are collected at the bottom of the post with back-links.
+The end of every post has an author card, buttons to copy the link or share it, and a ready-made citation.
+
+[^1]: Like this one. On smaller screens the notes are collected at the end of the post instead.
+
+[^2]: Add `cover: ../../assets/blog/my-post/cover.png` and `coverAlt` to the frontmatter to use your own image.
+
+[^3]: With $\eta$ as the learning rate. The dots also use momentum, which this equation leaves out.

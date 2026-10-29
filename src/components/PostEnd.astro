@@ -1,0 +1,248 @@
+---
+import { Image } from 'astro:assets';
+import Avatar from './Avatar.astro';
+import ContourArt from './ContourArt.astro';
+import Icon from './Icon.astro';
+import { SITE, SOCIALS } from '@/config';
+import { formatDate, postUrl, type Post } from '@/lib/posts';
+
+interface Props {
+  post: Post;
+  prev?: Post | undefined;
+  next?: Post | undefined;
+}
+
+const { post, prev, next } = Astro.props;
+const url = new URL(postUrl(post), SITE.url).href;
+const year = post.data.pubDate.getUTCFullYear();
+const lastName = SITE.name.split(' ').at(-1)!;
+const firstWord = post.data.title.toLowerCase().match(/[a-z0-9]+/)?.[0] ?? 'post';
+const bibtex = `@misc{${lastName.toLowerCase()}${year}${firstWord},
+  author = {${SITE.name}},
+  title  = {${post.data.title}},
+  year   = {${year}},
+  month  = {${post.data.pubDate.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }).toLowerCase()}},
+  url    = {${url}},
+  note   = {Blog post}
+}`;
+const plain = `${lastName}, ${SITE.name[0]}. (${year}). ${post.data.title}. ${url}`;
+const linkedIn = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+const adjacent = [
+  prev && { post: prev, label: 'Older', rel: 'prev' },
+  next && { post: next, label: 'Newer', rel: 'next' },
+].filter((a): a is { post: Post; label: string; rel: string } => Boolean(a));
+---
+
+<section class="post-end" aria-label="About this post">
+  <svg class="converged" viewBox="0 0 120 24" aria-hidden="true">
+    <path d="M4 6 C 30 6, 44 20, 70 17 S 100 12, 108 12" fill="none" />
+    <circle cx="108" cy="12" r="3" />
+    <circle cx="108" cy="12" r="7" class="ring" fill="none" />
+  </svg>
+
+  <div class="author">
+    <Avatar size={56} />
+    <div class="min-w-0">
+      <p class="font-mono text-xs text-fg-subtle">Written by</p>
+      <p class="mt-0.5 text-lg font-semibold tracking-tight">{SITE.name}</p>
+      <p class="mt-1 text-sm leading-relaxed text-fg-muted">{SITE.tagline}</p>
+      <ul class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+        {
+          SOCIALS.map(({ label, href, icon }) => (
+            <li>
+              <a href={href} class="inline-flex items-center gap-1.5 text-fg-muted hover:text-fg" target={href.startsWith('http') ? '_blank' : undefined} rel="me noopener">
+                <Icon name={icon} size={15} />
+                <span class="link-underline">{label}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button type="button" class="action" data-copy-text={url} data-copy-message="Link copied">
+      <Icon name="link" size={15} /> Copy link
+    </button>
+    <a class="action" href={linkedIn} target="_blank" rel="noopener">
+      <Icon name="linkedin" size={15} /> Share on LinkedIn
+    </a>
+  </div>
+
+  <details class="cite">
+      <summary class="action">
+        <Icon name="hash" size={15} /> Cite this post
+      </summary>
+      <div class="cite-body">
+        <p class="text-sm text-fg-muted">{plain}</p>
+        <div class="cite-code">
+          <pre><code>{bibtex}</code></pre>
+          <button type="button" class="copy-button" data-copy-text={bibtex} data-copy-message="BibTeX copied" aria-label="Copy BibTeX">
+            <Icon name="copy" size={14} /><span>Copy</span>
+          </button>
+        </div>
+      </div>
+  </details>
+
+  {
+    adjacent.length > 0 && (
+      <nav class="adjacent" aria-label="More posts">
+        {adjacent.map(({ post: p, label, rel }) => (
+          <a href={postUrl(p)} rel={rel} class:list={['adjacent-card group', rel]}>
+            <span class="thumb">
+              {p.data.cover ? (
+                <Image src={p.data.cover} alt="" widths={[320, 640]} sizes="20rem" class="size-full object-cover" />
+              ) : (
+                <ContourArt seed={p.id} />
+              )}
+            </span>
+            <span class="min-w-0 p-4">
+              <span class="flex items-center gap-1.5 font-mono text-xs text-fg-subtle">
+                {rel === 'prev' && <Icon name="arrow-left" size={13} />}
+                {label} · {formatDate(p.data.pubDate)}
+                {rel === 'next' && <Icon name="arrow-right" size={13} />}
+              </span>
+              <span class="mt-1.5 block font-medium leading-snug">{p.data.title}</span>
+            </span>
+          </a>
+        ))}
+      </nav>
+    )
+  }
+</section>
+
+<style>
+  .post-end {
+    margin-top: 4.5rem;
+  }
+  .converged {
+    display: block;
+    width: 7.5rem;
+    margin-bottom: 2.5rem;
+    color: var(--fg-subtle);
+  }
+  .converged path {
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-dasharray: 0 6;
+  }
+  .converged circle {
+    fill: var(--fg);
+  }
+  .converged .ring {
+    fill: none;
+    stroke: var(--accent);
+    stroke-opacity: 0.7;
+  }
+  .author {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    height: 2.25rem;
+    padding-inline: 0.85rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    color: var(--fg-muted);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    list-style: none;
+    transition:
+      color 200ms var(--ease-out),
+      border-color 200ms var(--ease-out),
+      background-color 200ms var(--ease-out);
+  }
+  .action::-webkit-details-marker {
+    display: none;
+  }
+  .action:hover,
+  .cite[open] > .action {
+    color: var(--fg);
+    border-color: oklch(from var(--accent) l c h / 0.5);
+    background: var(--accent-soft);
+  }
+  .cite {
+    margin-top: 0.5rem;
+  }
+  .cite > .action {
+    width: fit-content;
+  }
+  .cite-body {
+    margin-top: 0.5rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-subtle);
+  }
+  .cite-code {
+    position: relative;
+    margin-top: 0.75rem;
+  }
+  .cite-code pre {
+    overflow-x: auto;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.6rem;
+    background: var(--code-bg);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.7;
+  }
+  .cite-code .copy-button {
+    position: absolute;
+    top: 0.45rem;
+    right: 0.45rem;
+  }
+  .adjacent {
+    display: grid;
+    gap: 1rem;
+    margin-top: 3rem;
+  }
+  @media (width >= 40rem) {
+    .adjacent {
+      grid-template-columns: 1fr 1fr;
+    }
+    .adjacent-card.next:only-child {
+      grid-column: 2;
+    }
+  }
+  .adjacent-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    transition:
+      border-color 250ms var(--ease-out),
+      transform 300ms var(--ease-out);
+  }
+  .adjacent-card:hover {
+    border-color: oklch(from var(--accent) l c h / 0.45);
+    transform: translateY(-2px);
+  }
+  .thumb {
+    display: block;
+    aspect-ratio: 16 / 5;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-subtle);
+  }
+</style>
