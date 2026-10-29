@@ -23,13 +23,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # The embedding model for semantic search (~23 MB). Keyed on the semantic config, so changing
-      # the model or its revision downloads it again.
+      # The embedding model for semantic search (~23 MB), cached per pinned model revision.
+      - name: Read search model revision
+        id: model
+        run: |
+          revision=$(grep -oE "revision: '[0-9a-f]{40}'" src/lib/semantic/config.ts | grep -oE '[0-9a-f]{40}')
+          echo "revision=$revision" >> "$GITHUB_OUTPUT"
+
       - name: Cache search model
         uses: actions/cache@v6
         with:
           path: .cache/models
-          key: search-model-${{ hashFiles('src/lib/semantic/config.ts') }}
+          key: search-model-${{ steps.model.outputs.revision }}
 
       # Installs dependencies, runs `npm run build` (type check, Astro build, Pagefind index,
       # semantic search index) and uploads dist/ as the Pages artifact.
